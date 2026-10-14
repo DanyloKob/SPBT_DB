@@ -1,0 +1,3890 @@
+{
+  "startedAt": "2026-10-14T08:33:30.487Z",
+  "host": {
+    "cpu": "AMD Ryzen 5 7535HS with Radeon Graphics",
+    "cores": 12,
+    "memMB": 15277,
+    "node": "v22.23.1",
+    "lmdb": "3.5.6",
+    "kernel": "7.1.5-201.fc44.x86_64",
+    "swap": "/dev/zram0",
+    "loadavg": [
+      1.36,
+      1.34,
+      1.36
+    ]
+  },
+  "fs": {
+    "dir": "$TMPDIR/bench-data",
+    "type": "tmpfs",
+    "source": "tmpfs[/.flatpak/com.visualstudio.code/tmp]",
+    "compress": null,
+    "realDisk": false
+  },
+  "scale": 0.03,
+  "benches": [
+    {
+      "label": "00-calibrate",
+      "file": "00-calibrate.mjs",
+      "argv": [],
+      "exit": 0,
+      "seconds": 1.6,
+      "result": {
+        "bench": "00-calibrate",
+        "startedAt": "2026-10-14T08:33:30.626Z",
+        "host": {
+          "cpu": "AMD Ryzen 5 7535HS with Radeon Graphics",
+          "cores": 12,
+          "memMB": 15277,
+          "node": "v22.23.1",
+          "lmdb": "3.5.6",
+          "kernel": "7.1.5-201.fc44.x86_64",
+          "swap": "/dev/zram0",
+          "loadavg": [
+            1.36,
+            1.34,
+            1.36
+          ]
+        },
+        "args": {
+          "seqMB": 64,
+          "fsyncs": 300,
+          "rand": 500,
+          "dir": "$TMPDIR/bench-data/00-calibrate"
+        },
+        "calibration": {
+          "applied": false
+        },
+        "results": {
+          "fs": {
+            "dir": "$TMPDIR/bench-data/00-calibrate",
+            "type": "tmpfs",
+            "source": "tmpfs[/.flatpak/com.visualstudio.code/tmp]",
+            "compress": null,
+            "realDisk": false
+          },
+          "cpu": {
+            "nsPerOp": {
+              "keyEncode": 46.53,
+              "bufCompare": 22,
+              "msgpackPack": 853.96,
+              "msgpackUnpack": 968.59,
+              "jsonParse": 1604.64,
+              "sort1k": 32686.06
+            },
+            "geoMeanNs": 595.076,
+            "score": 168
+          },
+          "memcpyGBps": 15.68,
+          "seqWriteMBps": 2719.8,
+          "randWrite": {
+            "syncQD1": {
+              "iops": 333333,
+              "latencyMs": {
+                "n": 500,
+                "mean": 0.003,
+                "p50": 0.003,
+                "p90": 0.003,
+                "p99": 0.008,
+                "p999": 0.142,
+                "max": 0.142
+              }
+            },
+            "batched4096": {
+              "iops": 504616,
+              "seconds": 0.008
+            }
+          },
+          "fsyncMs": {
+            "n": 300,
+            "mean": 0.001,
+            "p50": 0.001,
+            "p90": 0.001,
+            "p99": 0.003,
+            "p999": 0.009,
+            "max": 0.009
+          },
+          "tanodbCommit1RowMs": {
+            "n": 300,
+            "mean": 0.019,
+            "p50": 0.016,
+            "p90": 0.022,
+            "p99": 0.118,
+            "p999": 0.313,
+            "max": 0.313
+          },
+          "local": {
+            "cpuGeoMeanNs": 595.076,
+            "memcpyGBps": 15.68,
+            "seqWriteMBps": 2719.8,
+            "randWriteSyncIops": 333333,
+            "fsyncMsP50": 0.001,
+            "commit1RowMsP50": 0.016
+          },
+          "target": {
+            "cpuGeoMeanNs": 1428.1824,
+            "memcpyGBps": 6,
+            "seqWriteMBps": 22.5,
+            "randWriteSyncIops": 500,
+            "fsyncMsP50": 2,
+            "source": "ASSUMED (no bench/target-host.json; see ASSUMED_TARGET in 00-calibrate.mjs)"
+          },
+          "assumptions": {
+            "cpuSlowdown": 2.4,
+            "cpuSlowdownThrottled": 19.2,
+            "seqWriteMBps": 22.5,
+            "randWriteIops": 2800,
+            "fsyncMs": 2,
+            "memcpyGBps": 6
+          },
+          "factors": {
+            "cpu": 2.4,
+            "memcpy": 2.613,
+            "seqWrite": null,
+            "randWrite": null,
+            "fsync": null,
+            "targetSeqWriteMBps": 22.5,
+            "targetFsyncMs": 2
+          }
+        },
+        "checks": [],
+        "notes": [
+          "dataset dir is tmpfs: fsync is a no-op, so disk factors are null and disk-bound checks in other benches are gated on raw (meaningless) local values",
+          "factors source: ASSUMED (no bench/target-host.json; see ASSUMED_TARGET in 00-calibrate.mjs)",
+          "CPU factor is for a BURSTING E2.1.Micro. Throttled to its 1/8-OCPU baseline, sustained throughput can be ~19.2x slower than this host."
+        ],
+        "pass": true,
+        "finishedAt": "2026-10-14T08:33:32.116Z"
+      }
+    },
+    {
+      "label": "01-write-throughput",
+      "file": "01-write-throughput.mjs",
+      "argv": [],
+      "exit": 1,
+      "seconds": 39.8,
+      "result": {
+        "bench": "01-write-throughput",
+        "startedAt": "2026-10-14T08:33:32.265Z",
+        "host": {
+          "cpu": "AMD Ryzen 5 7535HS with Radeon Graphics",
+          "cores": 12,
+          "memMB": 15277,
+          "node": "v22.23.1",
+          "lmdb": "3.5.6",
+          "kernel": "7.1.5-201.fc44.x86_64",
+          "swap": "/dev/zram0",
+          "loadavg": [
+            1.36,
+            1.34,
+            1.36
+          ]
+        },
+        "args": {
+          "level": 200000,
+          "batch": 1000,
+          "events": 300000,
+          "simSeconds": 35,
+          "rate": 50,
+          "dir": "$TMPDIR/bench-data/01-write"
+        },
+        "calibration": {
+          "applied": true,
+          "factors": {
+            "cpu": 2.4,
+            "memcpy": 2.613,
+            "seqWrite": null,
+            "randWrite": null,
+            "fsync": null,
+            "targetSeqWriteMBps": 22.5,
+            "targetFsyncMs": 2
+          }
+        },
+        "results": {
+          "fs": {
+            "dir": "$TMPDIR/bench-data/01-write",
+            "type": "tmpfs",
+            "source": "tmpfs[/.flatpak/com.visualstudio.code/tmp]",
+            "compress": null,
+            "realDisk": false
+          },
+          "level": {
+            "frameBytes": 4,
+            "logicalBytesPerRow": 40,
+            "insert": {
+              "commits": 200,
+              "rows": 200000,
+              "opsPerSec": 149959,
+              "msPerCommit": {
+                "n": 200,
+                "mean": 6.669,
+                "p50": 7.324,
+                "p90": 8.803,
+                "p99": 9.159,
+                "p999": 11.455,
+                "max": 11.455
+              },
+              "cpuShare": 0.745,
+              "cpuMsPerCommitMean": 4.969,
+              "commitMsPerCommitMean": 1.7,
+              "dirtyPagesPerCommit": {
+                "n": 200,
+                "mean": 1311.5,
+                "p50": 1494,
+                "p90": 1783,
+                "p99": 1798,
+                "p999": 1805,
+                "max": 1805
+              },
+              "bytesPerCommitMean": 5371848,
+              "newPagesPerCommitMean": 38.7,
+              "logicalBytesPerCommitMean": 40000,
+              "writeAmplification": 134.3
+            },
+            "coalescerFlush2000": {
+              "commits": 50,
+              "rows": 100000,
+              "opsPerSec": 97512,
+              "msPerCommit": {
+                "n": 50,
+                "mean": 20.51,
+                "p50": 20.377,
+                "p90": 20.917,
+                "p99": 25.614,
+                "p999": 25.614,
+                "max": 25.614
+              },
+              "cpuShare": 0.804,
+              "cpuMsPerCommitMean": 16.498,
+              "commitMsPerCommitMean": 4.012,
+              "dirtyPagesPerCommit": {
+                "n": 50,
+                "mean": 2604.5,
+                "p50": 2606,
+                "p90": 2631,
+                "p99": 2644,
+                "p999": 2644,
+                "max": 2644
+              },
+              "bytesPerCommitMean": 10667996,
+              "newPagesPerCommitMean": 34.2,
+              "logicalBytesPerCommitMean": 80000,
+              "writeAmplification": 133.35
+            },
+            "flush2000OneGuild": {
+              "commits": 10,
+              "rows": 20000,
+              "opsPerSec": 205732,
+              "msPerCommit": {
+                "n": 10,
+                "mean": 9.721,
+                "p50": 9.57,
+                "p90": 10.615,
+                "p99": 10.615,
+                "p999": 10.615,
+                "max": 10.615
+              },
+              "cpuShare": 0.847,
+              "cpuMsPerCommitMean": 8.232,
+              "commitMsPerCommitMean": 1.489,
+              "dirtyPagesPerCommit": {
+                "n": 10,
+                "mean": 19.8,
+                "p50": 19,
+                "p90": 29,
+                "p99": 29,
+                "p999": 29,
+                "max": 29
+              },
+              "bytesPerCommitMean": 81229,
+              "newPagesPerCommitMean": 0
+            },
+            "file": {
+              "bytes": 38764544,
+              "pages": 9466,
+              "freePages": 5272,
+              "levelPages": 2090,
+              "indexPages": 2086
+            }
+          },
+          "eventLog": {
+            "pageSize": 8192,
+            "meanFrameBytes": 167.3,
+            "singleStreamAppend512": {
+              "commits": 196,
+              "rows": 100352,
+              "opsPerSec": 382579,
+              "msPerCommit": {
+                "n": 196,
+                "mean": 1.338,
+                "p50": 1.249,
+                "p90": 1.602,
+                "p99": 3.726,
+                "p999": 4.784,
+                "max": 4.784
+              },
+              "cpuShare": 0.949,
+              "cpuMsPerCommitMean": 1.27,
+              "commitMsPerCommitMean": 0.068,
+              "dirtyPagesPerCommit": {
+                "n": 196,
+                "mean": 18.1,
+                "p50": 18,
+                "p90": 19,
+                "p99": 19,
+                "p999": 20,
+                "max": 20
+              },
+              "bytesPerCommitMean": 148169,
+              "newPagesPerCommitMean": 13.2,
+              "logicalBytesPerCommitMean": 97620,
+              "writeAmplification": 1.52
+            },
+            "shaped80ch": {
+              "batch512": {
+                "commits": 157,
+                "rows": 80384,
+                "opsPerSec": 307077,
+                "msPerCommit": {
+                  "n": 157,
+                  "mean": 1.667,
+                  "p50": 1.63,
+                  "p90": 1.76,
+                  "p99": 2.811,
+                  "p999": 2.816,
+                  "max": 2.816
+                },
+                "cpuShare": 0.874,
+                "cpuMsPerCommitMean": 1.458,
+                "commitMsPerCommitMean": 0.21,
+                "dirtyPagesPerCommit": {
+                  "n": 157,
+                  "mean": 120.7,
+                  "p50": 121,
+                  "p90": 130,
+                  "p99": 135,
+                  "p999": 135,
+                  "max": 135
+                },
+                "bytesPerCommitMean": 988542,
+                "newPagesPerCommitMean": 22.7,
+                "logicalBytesPerCommitMean": 97872,
+                "writeAmplification": 10.1
+              },
+              "batch250": {
+                "commits": 320,
+                "rows": 80000,
+                "opsPerSec": 273479,
+                "msPerCommit": {
+                  "n": 320,
+                  "mean": 0.914,
+                  "p50": 0.888,
+                  "p90": 0.973,
+                  "p99": 1.444,
+                  "p999": 2.372,
+                  "max": 2.372
+                },
+                "cpuShare": 0.814,
+                "cpuMsPerCommitMean": 0.744,
+                "commitMsPerCommitMean": 0.17,
+                "dirtyPagesPerCommit": {
+                  "n": 320,
+                  "mean": 119.3,
+                  "p50": 119,
+                  "p90": 128,
+                  "p99": 132,
+                  "p999": 135,
+                  "max": 135
+                },
+                "bytesPerCommitMean": 977664,
+                "newPagesPerCommitMean": 11,
+                "logicalBytesPerCommitMean": 47746,
+                "writeAmplification": 20.48
+              }
+            },
+            "file": {
+              "bytes": 94707712,
+              "rows": 300352,
+              "dataPages": 11318,
+              "bytesPerRowOnPages": 308.7,
+              "spaceAmplification": 1.61
+            }
+          },
+          "sim50": {
+            "seconds": 35,
+            "messages": 1750,
+            "coalescers": {
+              "event_log": {
+                "name": "event_log",
+                "pending": 0,
+                "oldestAgeMs": 0,
+                "inflight": false,
+                "ops": 1750,
+                "flushes": 7,
+                "commits": 7,
+                "written": 1750,
+                "errors": 0,
+                "overCap": 0,
+                "dropped": 0,
+                "lastFlushMs": 2.065557000001718,
+                "lastApplyMs": 1.539175999998406,
+                "lastFlushEntries": 247,
+                "lastAgeMs": 4940,
+                "maxAgeMs": 5002
+              },
+              "level": {
+                "name": "level.xp",
+                "pending": 0,
+                "oldestAgeMs": 0,
+                "inflight": false,
+                "ops": 1750,
+                "flushes": 2,
+                "commits": 2,
+                "written": 1743,
+                "errors": 0,
+                "overCap": 0,
+                "dropped": 0,
+                "lastFlushMs": 4.150891999997839,
+                "lastApplyMs": 1.8573560000004363,
+                "lastFlushEntries": 249,
+                "lastAgeMs": 4983,
+                "maxAgeMs": 30000
+              }
+            },
+            "commitsPerSec": 0.257,
+            "mainThreadBusyShare": 0.0043,
+            "mainThreadUsPerMessage": 86.99,
+            "perMessageUs": {
+              "n": 1750,
+              "mean": 86.99,
+              "p50": 80.51,
+              "p90": 120.18,
+              "p99": 174.55,
+              "p999": 672.18,
+              "max": 1023.75
+            },
+            "fdatasyncPerSec": 0.257
+          },
+          "fdatasyncPerCommit": {
+            "measuredWith": "strace -f -c",
+            "perCommit": 1,
+            "note": "plus one O_DSYNC write of the meta page per commit (LMDB writes meta through a separate O_DSYNC fd), so a commit costs ~2 device flushes"
+          }
+        },
+        "checks": [
+          {
+            "name": "level put/s, batched 1000, +index",
+            "value": 149959,
+            "unit": "put/s",
+            "op": ">=",
+            "limit": 15000,
+            "scale": null,
+            "projected": null,
+            "localPass": true,
+            "pass": true
+          },
+          {
+            "name": "level dirty pages per 2000-incr flush (p50)",
+            "value": 2606,
+            "unit": "pages",
+            "op": "<=",
+            "limit": 300,
+            "scale": null,
+            "projected": null,
+            "localPass": false,
+            "pass": null,
+            "informational": true,
+            "note": "§7.2 estimates ~300 dirty pages per 30 s flush"
+          },
+          {
+            "name": "event_log put/s, batched 512 (80 channels)",
+            "value": 307077,
+            "unit": "put/s",
+            "op": ">=",
+            "limit": 15000,
+            "scale": null,
+            "projected": null,
+            "localPass": true,
+            "pass": true
+          },
+          {
+            "name": "write amplification, append-key single stream (512/commit)",
+            "value": 1.52,
+            "unit": "x",
+            "op": "<=",
+            "limit": 1.6,
+            "scale": null,
+            "projected": null,
+            "localPass": true,
+            "pass": true
+          },
+          {
+            "name": "write amplification, event_log 80 channels, 512/commit",
+            "value": 10.1,
+            "unit": "x",
+            "op": "<=",
+            "limit": 1.6,
+            "scale": null,
+            "projected": null,
+            "localPass": false,
+            "pass": false,
+            "note": "the doc (§13) calls its own 1.5x estimate for event_log doubtful until measured"
+          },
+          {
+            "name": "write amplification, event_log 80 channels, 250/commit (50 msg/s x 5 s)",
+            "value": 20.48,
+            "unit": "x",
+            "op": "<=",
+            "limit": 1.6,
+            "scale": null,
+            "projected": null,
+            "localPass": false,
+            "pass": false
+          },
+          {
+            "name": "fsync/s under synthetic 50 msg/s (src/coalesce.js)",
+            "value": 0.257,
+            "unit": "fsync/s",
+            "op": "<=",
+            "limit": 4,
+            "scale": null,
+            "projected": null,
+            "localPass": true,
+            "pass": true,
+            "note": "coalescer commits/s x measured fdatasync per commit; policy-bound (§7.3)"
+          },
+          {
+            "name": "main-thread share at 50 msg/s (6 gets + append + bump; commits are off-thread)",
+            "value": 0.0043,
+            "unit": "share",
+            "op": "<=",
+            "limit": 1,
+            "scale": "cpu",
+            "projected": 0.01032,
+            "localPass": true,
+            "pass": null,
+            "informational": true
+          }
+        ],
+        "notes": [],
+        "pass": false,
+        "finishedAt": "2026-10-14T08:34:11.944Z"
+      }
+    },
+    {
+      "label": "02-read-latency",
+      "file": "02-read-latency.mjs",
+      "argv": [
+        "--scale",
+        "0.3"
+      ],
+      "exit": 1,
+      "seconds": 45.1,
+      "result": {
+        "bench": "02-read-latency",
+        "startedAt": "2026-10-14T08:34:12.089Z",
+        "host": {
+          "cpu": "AMD Ryzen 5 7535HS with Radeon Graphics",
+          "cores": 12,
+          "memMB": 15277,
+          "node": "v22.23.1",
+          "lmdb": "3.5.6",
+          "kernel": "7.1.5-201.fc44.x86_64",
+          "swap": "/dev/zram0",
+          "loadavg": [
+            0.81,
+            1.2,
+            1.31
+          ]
+        },
+        "args": {
+          "scale": 0.3,
+          "gets": 300000,
+          "coldGets": 3000,
+          "dir": "$TMPDIR/bench-data/02-read",
+          "rows": {
+            "level": 60000,
+            "user": 60000,
+            "fc": 15000,
+            "cases": 30000,
+            "events": 90000
+          }
+        },
+        "calibration": {
+          "applied": true,
+          "factors": {
+            "cpu": 2.4,
+            "memcpy": 2.613,
+            "seqWrite": null,
+            "randWrite": null,
+            "fsync": null,
+            "targetSeqWriteMBps": 22.5,
+            "targetFsyncMs": 2
+          }
+        },
+        "results": {
+          "fs": {
+            "dir": "$TMPDIR/bench-data/02-read",
+            "type": "tmpfs",
+            "source": "tmpfs[/.flatpak/com.visualstudio.code/tmp]",
+            "compress": null,
+            "realDisk": false
+          },
+          "build": {
+            "seconds": 1.7,
+            "hotFileMB": 36.6,
+            "coldFileMB": 38.4
+          },
+          "hotUs": {
+            "levelGet": {
+              "n": 300000,
+              "mean": 0.755,
+              "p50": 0.712,
+              "p90": 0.901,
+              "p99": 1.332,
+              "p999": 2.665,
+              "max": 304.162,
+              "timerOverheadP50": 0.04
+            },
+            "userGet": {
+              "n": 300000,
+              "mean": 0.968,
+              "p50": 0.912,
+              "p90": 1.123,
+              "p99": 1.593,
+              "p999": 4.628,
+              "max": 255.09,
+              "timerOverheadP50": 0.03
+            },
+            "featureConfigGet": {
+              "n": 300000,
+              "mean": 10.982,
+              "p50": 9.598,
+              "p90": 11.843,
+              "p99": 20.388,
+              "p999": 53.951,
+              "max": 3094.484,
+              "timerOverheadP50": 0.03
+            },
+            "indexLookupCaseByTarget": {
+              "n": 100000,
+              "mean": 7.018,
+              "p50": 5.961,
+              "p90": 9.568,
+              "p99": 16.01,
+              "p999": 31.93,
+              "max": 3003.593,
+              "timerOverheadP50": 0.03
+            },
+            "levelRank": {
+              "n": 100000,
+              "mean": 4.65,
+              "p50": 4.198,
+              "p90": 5.731,
+              "p99": 9.297,
+              "p999": 16.441,
+              "max": 3893.408,
+              "timerOverheadP50": 0.03
+            },
+            "eventLogRange100": {
+              "n": 30000,
+              "mean": 173.864,
+              "p50": 155.253,
+              "p90": 227.218,
+              "p99": 414.34,
+              "p999": 665.212,
+              "max": 2165.856,
+              "timerOverheadP50": 0.03,
+              "meanItems": 100
+            },
+            "levelTop100Covered": {
+              "n": 30000,
+              "mean": 104.324,
+              "p50": 87.745,
+              "p90": 149.371,
+              "p99": 258.176,
+              "p999": 574.261,
+              "max": 2973.316,
+              "timerOverheadP50": 0.03
+            },
+            "rawBackendRange100EventLog": {
+              "n": 30000,
+              "mean": 94.612,
+              "p50": 69.761,
+              "p90": 185.289,
+              "p99": 230.714,
+              "p999": 669.22,
+              "max": 3495.348,
+              "timerOverheadP50": 0.03
+            },
+            "rawBackendRange100LevelByXp": {
+              "n": 30000,
+              "mean": 33.189,
+              "p50": 31.088,
+              "p90": 33.563,
+              "p99": 53.521,
+              "p999": 447.712,
+              "max": 1555.678,
+              "timerOverheadP50": 0.03
+            },
+            "pacedFirstGet": {
+              "n": 400,
+              "mean": 59.627,
+              "p50": 54.824,
+              "p90": 77.065,
+              "p99": 121.349,
+              "p999": 440.008,
+              "max": 440.008
+            },
+            "pacedNextGetsAvg": {
+              "n": 400,
+              "mean": 49.166,
+              "p50": 47.55,
+              "p90": 67.701,
+              "p99": 89.882,
+              "p999": 97.507,
+              "max": 97.507
+            }
+          },
+          "cold": {
+            "kind": "minor faults only: tmpfs cannot be evicted",
+            "eviction": {
+              "hot": {
+                "before": 38395904,
+                "after": 38395904
+              },
+              "cold": {
+                "before": 40239104,
+                "after": 40239104
+              }
+            },
+            "residentAfterRunHotBytes": 38395904,
+            "openMs": 8.288568999999995,
+            "levelGetUs": {
+              "n": 3000,
+              "mean": 2.3,
+              "p50": 1.8,
+              "p90": 3,
+              "p99": 7.9,
+              "p999": 57.4,
+              "max": 130.7
+            },
+            "userGetUs": {
+              "n": 3000,
+              "mean": 3.1,
+              "p50": 2.2,
+              "p90": 4.1,
+              "p99": 13,
+              "p999": 153.3,
+              "max": 286.8
+            },
+            "sameKeysAgainUs": {
+              "n": 3000,
+              "mean": 1.08,
+              "p50": 0.97,
+              "p90": 1.37,
+              "p99": 2.1,
+              "p999": 22.7,
+              "max": 36.57
+            },
+            "majorFaults": {
+              "level": 0,
+              "user": 0
+            },
+            "majorFaultsPerGet": {
+              "level": 0,
+              "user": 0
+            }
+          }
+        },
+        "checks": [
+          {
+            "name": "hot level.get p50",
+            "value": 0.712,
+            "unit": "µs",
+            "op": "<=",
+            "limit": 2,
+            "scale": "cpu",
+            "projected": 1.7088,
+            "localPass": true,
+            "pass": true
+          },
+          {
+            "name": "hot level.get p99",
+            "value": 1.332,
+            "unit": "µs",
+            "op": "<=",
+            "limit": 10,
+            "scale": "cpu",
+            "projected": 3.1968,
+            "localPass": true,
+            "pass": true
+          },
+          {
+            "name": "hot user.get p50 (msgpack)",
+            "value": 0.912,
+            "unit": "µs",
+            "op": "<=",
+            "limit": 2,
+            "scale": "cpu",
+            "projected": 2.1888,
+            "localPass": true,
+            "pass": false
+          },
+          {
+            "name": "hot user.get p99 (msgpack)",
+            "value": 1.593,
+            "unit": "µs",
+            "op": "<=",
+            "limit": 10,
+            "scale": "cpu",
+            "projected": 3.8232,
+            "localPass": true,
+            "pass": true
+          },
+          {
+            "name": "hot feature_config.get p50 (~700 B, deflate)",
+            "value": 9.598,
+            "unit": "µs",
+            "op": "<=",
+            "limit": 2,
+            "scale": "cpu",
+            "projected": 23.0352,
+            "localPass": false,
+            "pass": null,
+            "informational": true,
+            "note": "design reads configs through configLRU (§6.2), not a decode per read"
+          },
+          {
+            "name": "hot feature_config.get p99",
+            "value": 20.388,
+            "unit": "µs",
+            "op": "<=",
+            "limit": 10,
+            "scale": "cpu",
+            "projected": 48.9312,
+            "localPass": false,
+            "pass": null,
+            "informational": true
+          },
+          {
+            "name": "event-paced first get after 20 ms idle p50 (50 msg/s handler)",
+            "value": 54.824,
+            "unit": "µs",
+            "op": "<=",
+            "limit": 2,
+            "scale": "cpu",
+            "projected": 131.578,
+            "localPass": false,
+            "pass": null,
+            "informational": true,
+            "note": "not the doc's steady-state metric, but what each messageCreate pays first: read-txn renewal + cold CPU caches after an idle event turn"
+          },
+          {
+            "name": "event-paced following gets p50 (avg of user + feature_config + level)",
+            "value": 47.55,
+            "unit": "µs",
+            "op": "<=",
+            "limit": 10,
+            "scale": "cpu",
+            "projected": 114.12,
+            "localPass": false,
+            "pass": null,
+            "informational": true
+          },
+          {
+            "name": "index lookup case_by_target (limit 10, +primary) p99",
+            "value": 16.01,
+            "unit": "µs",
+            "op": "<=",
+            "limit": 200,
+            "scale": "cpu",
+            "projected": 38.424,
+            "localPass": true,
+            "pass": null,
+            "informational": true,
+            "note": "no explicit doc threshold; range(100) limit used as a sanity bound"
+          },
+          {
+            "name": "range(100) event_log p99",
+            "value": 414.34,
+            "unit": "µs",
+            "op": "<=",
+            "limit": 200,
+            "scale": "cpu",
+            "projected": 994.416,
+            "localPass": false,
+            "pass": false
+          },
+          {
+            "name": "range(100) level.top covered p99",
+            "value": 258.176,
+            "unit": "µs",
+            "op": "<=",
+            "limit": 200,
+            "scale": "cpu",
+            "projected": 619.622,
+            "localPass": false,
+            "pass": false
+          },
+          {
+            "name": "range(100) bare lmdb getRange event_log p99 (engine floor, no decode)",
+            "value": 230.714,
+            "unit": "µs",
+            "op": "<=",
+            "limit": 200,
+            "scale": "cpu",
+            "projected": 553.714,
+            "localPass": false,
+            "pass": null,
+            "informational": true,
+            "note": "what the range costs before TanoDB decodes anything"
+          },
+          {
+            "name": "cold level.get p50 (first touch)",
+            "value": 1.8,
+            "unit": "µs",
+            "op": "<=",
+            "limit": 600,
+            "scale": null,
+            "projected": null,
+            "localPass": true,
+            "pass": null,
+            "informational": true,
+            "note": "§6.5 assumes a page fault on the target costs 400-600 µs"
+          },
+          {
+            "name": "cold level.get p99",
+            "value": 7.9,
+            "unit": "µs",
+            "op": "<=",
+            "limit": 600,
+            "scale": null,
+            "projected": null,
+            "localPass": true,
+            "pass": null,
+            "informational": true
+          }
+        ],
+        "notes": [
+          "cold case: minor faults only: tmpfs cannot be evicted",
+          "lmdb readahead: hot.mdb uses noReadAhead (MADV_RANDOM), cold.mdb does not"
+        ],
+        "pass": false,
+        "finishedAt": "2026-10-14T08:34:57.061Z"
+      }
+    },
+    {
+      "label": "03-rss-at-scale (as shipped)",
+      "file": "03-rss-at-scale.mjs",
+      "argv": [
+        "--scale",
+        "0.03",
+        "--seconds",
+        "30",
+        "--keep"
+      ],
+      "exit": 1,
+      "seconds": 31.5,
+      "result": {
+        "bench": "03-rss-at-scale",
+        "startedAt": "2026-10-14T08:34:57.231Z",
+        "host": {
+          "cpu": "AMD Ryzen 5 7535HS with Radeon Graphics",
+          "cores": 12,
+          "memMB": 15277,
+          "node": "v22.23.1",
+          "lmdb": "3.5.6",
+          "kernel": "7.1.5-201.fc44.x86_64",
+          "swap": "/dev/zram0",
+          "loadavg": [
+            1.25,
+            1.28,
+            1.34
+          ]
+        },
+        "args": {
+          "scale": 0.03,
+          "seconds": 30,
+          "rate": 500,
+          "rows": {
+            "guilds": 500,
+            "users": 6000,
+            "levels": 6000,
+            "events": 150000,
+            "configs": 1500,
+            "schemes": 300,
+            "cases": 3000
+          },
+          "dir": "$TMPDIR/bench-data/03-rss"
+        },
+        "calibration": {
+          "applied": true,
+          "factors": {
+            "cpu": 2.4,
+            "memcpy": 2.613,
+            "seqWrite": null,
+            "randWrite": null,
+            "fsync": null,
+            "targetSeqWriteMBps": 22.5,
+            "targetFsyncMs": 2
+          }
+        },
+        "results": {
+          "fs": {
+            "dir": "$TMPDIR/bench-data",
+            "type": "tmpfs",
+            "source": "tmpfs[/.flatpak/com.visualstudio.code/tmp]",
+            "compress": null,
+            "realDisk": false
+          },
+          "gen": {
+            "seconds": 1.000517399,
+            "stats": {
+              "hot": {
+                "entries": 35926,
+                "pages": 1016,
+                "freePages": 6,
+                "fileBytes": 4161536,
+                "pageSize": 4096,
+                "mapSize": 6029312,
+                "collections": {
+                  "guild": {
+                    "entries": 500,
+                    "pages": 15,
+                    "freePages": 6
+                  },
+                  "user": {
+                    "entries": 6000,
+                    "pages": 151,
+                    "freePages": 6
+                  },
+                  "user_by_plan": {
+                    "entries": 6000,
+                    "pages": 41,
+                    "freePages": 6
+                  },
+                  "user_by_expiry": {
+                    "entries": 191,
+                    "pages": 3,
+                    "freePages": 6
+                  },
+                  "level": {
+                    "entries": 5980,
+                    "pages": 64,
+                    "freePages": 6
+                  },
+                  "level_by_xp": {
+                    "entries": 5980,
+                    "pages": 65,
+                    "freePages": 6
+                  },
+                  "feature_config": {
+                    "entries": 1500,
+                    "pages": 297,
+                    "freePages": 6
+                  },
+                  "mod_case": {
+                    "entries": 3000,
+                    "pages": 74,
+                    "freePages": 6
+                  },
+                  "case_by_target": {
+                    "entries": 3000,
+                    "pages": 34,
+                    "freePages": 6
+                  },
+                  "case_by_mod": {
+                    "entries": 3000,
+                    "pages": 33,
+                    "freePages": 6
+                  },
+                  "case_active": {
+                    "entries": 168,
+                    "pages": 3,
+                    "freePages": 6
+                  },
+                  "builder_scheme": {
+                    "entries": 300,
+                    "pages": 220,
+                    "freePages": 6
+                  },
+                  "scheme_by_updated": {
+                    "entries": 300,
+                    "pages": 4,
+                    "freePages": 6
+                  },
+                  "kv": {
+                    "entries": 1,
+                    "pages": 1,
+                    "freePages": 6
+                  }
+                }
+              },
+              "cold": {
+                "entries": 150001,
+                "pages": 8901,
+                "freePages": 2950,
+                "fileBytes": 72916992,
+                "pageSize": 8192,
+                "mapSize": 8589934592,
+                "collections": {
+                  "event_log_202610": {
+                    "entries": 150000,
+                    "pages": 5942,
+                    "freePages": 2950
+                  }
+                }
+              }
+            }
+          },
+          "pageCacheEvictedBeforeMix": null,
+          "mix": {
+            "seconds": 30,
+            "msgs": 15095,
+            "commits": 96,
+            "panelReads": 29,
+            "errors": 0,
+            "errorSamples": [],
+            "msgsPerSec": 503
+          },
+          "memory": {
+            "atNodeStart": {
+              "label": "node+imports",
+              "t": 0.12,
+              "rssMB": 69.43,
+              "rssAnonMB": 21.2,
+              "rssFileMB": 48.23,
+              "rssShmemMB": 0,
+              "swapMB": 0,
+              "hwmMB": 69.43,
+              "pssAnonMB": 21.21,
+              "pssFileMB": 11.48,
+              "pssShmemMB": 0,
+              "anonymousMB": 21.21,
+              "hotMdbRssMB": 0,
+              "coldMdbRssMB": 0,
+              "hotMdbMappings": 0,
+              "coldMdbMappings": 0,
+              "heapUsedMB": 7.43,
+              "externalMB": 18.1,
+              "arrayBuffersMB": 16.03
+            },
+            "afterOpen": {
+              "label": "opened",
+              "t": 0.14,
+              "rssMB": 73.05,
+              "rssAnonMB": 24.23,
+              "rssFileMB": 48.44,
+              "rssShmemMB": 0.38,
+              "swapMB": 0,
+              "hwmMB": 73.05,
+              "pssAnonMB": 24.23,
+              "pssFileMB": 11.55,
+              "pssShmemMB": 0.38,
+              "anonymousMB": 24.23,
+              "hotMdbRssMB": 0.25,
+              "coldMdbRssMB": 0.13,
+              "hotMdbMappings": 1,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 8.27,
+              "externalMB": 18.15,
+              "arrayBuffersMB": 16.17
+            },
+            "end": {
+              "label": "end+gc",
+              "t": 30.18,
+              "rssMB": 187.82,
+              "rssAnonMB": 67.49,
+              "rssFileMB": 48.66,
+              "rssShmemMB": 71.67,
+              "swapMB": 0,
+              "hwmMB": 187.82,
+              "pssAnonMB": 67.49,
+              "pssFileMB": 11.65,
+              "pssShmemMB": 68.14,
+              "anonymousMB": 67.49,
+              "hotMdbRssMB": 10.13,
+              "coldMdbRssMB": 61.54,
+              "hotMdbMappings": 2,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 9.07,
+              "externalMB": 25.38,
+              "arrayBuffersMB": 16.19
+            },
+            "peakRssMB": 187.82,
+            "peakAnonMB": 67.63,
+            "peakHotMdbRssMB": 10.13,
+            "peakColdMdbRssMB": 61.54,
+            "peakSwapMB": 0,
+            "hotMdbMappingsEnd": 2,
+            "coldMdbMappingsEnd": 1,
+            "rssSlopeMBPerMinSecondHalf": 10.517,
+            "hotResidentShareOfFile": 1.49,
+            "coldResidentShareOfFile": 0.885
+          },
+          "files": {
+            "hotMB": 6.8,
+            "coldMB": 69.5
+          },
+          "bytesPerRecord": {
+            "user": {
+              "entries": 6000,
+              "dataBytesPerRecord": 103.1,
+              "withIndexesBytesPerRecord": 133.1
+            },
+            "level": {
+              "entries": 20620,
+              "dataBytesPerRecord": 43.5,
+              "withIndexesBytesPerRecord": 70.9
+            },
+            "feature_config": {
+              "entries": 1500,
+              "dataBytesPerRecord": 811,
+              "withIndexesBytesPerRecord": 811
+            },
+            "builder_scheme": {
+              "entries": 300,
+              "dataBytesPerRecord": 3003.7,
+              "withIndexesBytesPerRecord": 3058.3
+            },
+            "mod_case": {
+              "entries": 3029,
+              "dataBytesPerRecord": 100.1,
+              "withIndexesBytesPerRecord": 194.7
+            },
+            "event_log": {
+              "entries": 165095,
+              "dataBytesPerRecord": 328,
+              "withIndexesBytesPerRecord": 328
+            },
+            "guild": {
+              "entries": 500,
+              "dataBytesPerRecord": 122.9,
+              "withIndexesBytesPerRecord": 122.9
+            }
+          },
+          "docBytesPerRow": {
+            "user": 60,
+            "level": 6,
+            "feature_config": 700,
+            "builder_scheme": 1500,
+            "mod_case": 150,
+            "event_log": 200,
+            "guild": 70,
+            "note": "§5 logical B/row; ×1.35 B+tree fill-factor per §5.10"
+          },
+          "perCollection": {
+            "guild": {
+              "env": "hot",
+              "entries": 500,
+              "pages": 15,
+              "bytesOnPages": 61440,
+              "bytesPerRecord": 122.9
+            },
+            "user": {
+              "env": "hot",
+              "entries": 6000,
+              "pages": 151,
+              "bytesOnPages": 618496,
+              "bytesPerRecord": 103.1
+            },
+            "user_by_plan": {
+              "env": "hot",
+              "entries": 6000,
+              "pages": 41,
+              "bytesOnPages": 167936,
+              "bytesPerRecord": 28
+            },
+            "user_by_expiry": {
+              "env": "hot",
+              "entries": 191,
+              "pages": 3,
+              "bytesOnPages": 12288,
+              "bytesPerRecord": 64.3
+            },
+            "level": {
+              "env": "hot",
+              "entries": 20620,
+              "pages": 219,
+              "bytesOnPages": 897024,
+              "bytesPerRecord": 43.5
+            },
+            "level_by_xp": {
+              "env": "hot",
+              "entries": 20620,
+              "pages": 138,
+              "bytesOnPages": 565248,
+              "bytesPerRecord": 27.4
+            },
+            "feature_config": {
+              "env": "hot",
+              "entries": 1500,
+              "pages": 297,
+              "bytesOnPages": 1216512,
+              "bytesPerRecord": 811
+            },
+            "mod_case": {
+              "env": "hot",
+              "entries": 3029,
+              "pages": 74,
+              "bytesOnPages": 303104,
+              "bytesPerRecord": 100.1
+            },
+            "case_by_target": {
+              "env": "hot",
+              "entries": 3029,
+              "pages": 34,
+              "bytesOnPages": 139264,
+              "bytesPerRecord": 46
+            },
+            "case_by_mod": {
+              "env": "hot",
+              "entries": 3029,
+              "pages": 33,
+              "bytesOnPages": 135168,
+              "bytesPerRecord": 44.6
+            },
+            "case_active": {
+              "env": "hot",
+              "entries": 168,
+              "pages": 3,
+              "bytesOnPages": 12288,
+              "bytesPerRecord": 73.1
+            },
+            "builder_scheme": {
+              "env": "hot",
+              "entries": 300,
+              "pages": 220,
+              "bytesOnPages": 901120,
+              "bytesPerRecord": 3003.7
+            },
+            "scheme_by_updated": {
+              "env": "hot",
+              "entries": 300,
+              "pages": 4,
+              "bytesOnPages": 16384,
+              "bytesPerRecord": 54.6
+            },
+            "kv": {
+              "env": "hot",
+              "entries": 1,
+              "pages": 1,
+              "bytesOnPages": 4096,
+              "bytesPerRecord": 4096
+            },
+            "event_log_202610": {
+              "env": "cold",
+              "entries": 165095,
+              "pages": 6611,
+              "bytesOnPages": 54157312,
+              "bytesPerRecord": 328
+            }
+          },
+          "samples": [
+            {
+              "label": "node+imports",
+              "t": 0.12,
+              "rssMB": 69.43,
+              "rssAnonMB": 21.2,
+              "rssFileMB": 48.23,
+              "rssShmemMB": 0,
+              "swapMB": 0,
+              "hwmMB": 69.43,
+              "pssAnonMB": 21.21,
+              "pssFileMB": 11.48,
+              "pssShmemMB": 0,
+              "anonymousMB": 21.21,
+              "hotMdbRssMB": 0,
+              "coldMdbRssMB": 0,
+              "hotMdbMappings": 0,
+              "coldMdbMappings": 0,
+              "heapUsedMB": 7.43,
+              "externalMB": 18.1,
+              "arrayBuffersMB": 16.03
+            },
+            {
+              "label": "opened",
+              "t": 0.14,
+              "rssMB": 73.05,
+              "rssAnonMB": 24.23,
+              "rssFileMB": 48.44,
+              "rssShmemMB": 0.38,
+              "swapMB": 0,
+              "hwmMB": 73.05,
+              "pssAnonMB": 24.23,
+              "pssFileMB": 11.55,
+              "pssShmemMB": 0.38,
+              "anonymousMB": 24.23,
+              "hotMdbRssMB": 0.25,
+              "coldMdbRssMB": 0.13,
+              "hotMdbMappings": 1,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 8.27,
+              "externalMB": 18.15,
+              "arrayBuffersMB": 16.17
+            },
+            {
+              "label": "mix",
+              "t": 1.18,
+              "rssMB": 88.25,
+              "rssAnonMB": 35.25,
+              "rssFileMB": 48.6,
+              "rssShmemMB": 4.39,
+              "swapMB": 0,
+              "hwmMB": 88.25,
+              "pssAnonMB": 35.25,
+              "pssFileMB": 11.62,
+              "pssShmemMB": 4.07,
+              "anonymousMB": 35.25,
+              "hotMdbRssMB": 3.95,
+              "coldMdbRssMB": 0.44,
+              "hotMdbMappings": 2,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 9.14,
+              "externalMB": 24.65,
+              "arrayBuffersMB": 16.17
+            },
+            {
+              "label": "mix",
+              "t": 2.18,
+              "rssMB": 117.76,
+              "rssAnonMB": 46.08,
+              "rssFileMB": 48.6,
+              "rssShmemMB": 23.07,
+              "swapMB": 0,
+              "hwmMB": 117.76,
+              "pssAnonMB": 46.08,
+              "pssFileMB": 11.62,
+              "pssShmemMB": 20.25,
+              "anonymousMB": 46.08,
+              "hotMdbRssMB": 6.59,
+              "coldMdbRssMB": 16.48,
+              "hotMdbMappings": 2,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 11.04,
+              "externalMB": 19.34,
+              "arrayBuffersMB": 17.36
+            },
+            {
+              "label": "mix",
+              "t": 3.18,
+              "rssMB": 133.44,
+              "rssAnonMB": 50.89,
+              "rssFileMB": 48.66,
+              "rssShmemMB": 33.89,
+              "swapMB": 0,
+              "hwmMB": 133.44,
+              "pssAnonMB": 50.89,
+              "pssFileMB": 11.65,
+              "pssShmemMB": 31,
+              "anonymousMB": 50.89,
+              "hotMdbRssMB": 6.65,
+              "coldMdbRssMB": 27.23,
+              "hotMdbMappings": 2,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 13.17,
+              "externalMB": 28.3,
+              "arrayBuffersMB": 26.32
+            },
+            {
+              "label": "mix",
+              "t": 4.17,
+              "rssMB": 150.6,
+              "rssAnonMB": 57.05,
+              "rssFileMB": 48.66,
+              "rssShmemMB": 44.89,
+              "swapMB": 0,
+              "hwmMB": 150.6,
+              "pssAnonMB": 57.05,
+              "pssFileMB": 11.65,
+              "pssShmemMB": 41.94,
+              "anonymousMB": 57.05,
+              "hotMdbRssMB": 6.71,
+              "coldMdbRssMB": 38.16,
+              "hotMdbMappings": 2,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 11.1,
+              "externalMB": 20.19,
+              "arrayBuffersMB": 18.21
+            },
+            {
+              "label": "mix",
+              "t": 5.18,
+              "rssMB": 160.85,
+              "rssAnonMB": 58.87,
+              "rssFileMB": 48.66,
+              "rssShmemMB": 53.32,
+              "swapMB": 0,
+              "hwmMB": 160.85,
+              "pssAnonMB": 58.88,
+              "pssFileMB": 11.65,
+              "pssShmemMB": 50.3,
+              "anonymousMB": 58.88,
+              "hotMdbRssMB": 7.39,
+              "coldMdbRssMB": 45.91,
+              "hotMdbMappings": 2,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 16.81,
+              "externalMB": 37.2,
+              "arrayBuffersMB": 35.22
+            },
+            {
+              "label": "mix",
+              "t": 6.18,
+              "rssMB": 167.01,
+              "rssAnonMB": 60.66,
+              "rssFileMB": 48.66,
+              "rssShmemMB": 57.69,
+              "swapMB": 0,
+              "hwmMB": 167.01,
+              "pssAnonMB": 60.66,
+              "pssFileMB": 11.65,
+              "pssShmemMB": 54.61,
+              "anonymousMB": 60.66,
+              "hotMdbRssMB": 7.46,
+              "coldMdbRssMB": 50.23,
+              "hotMdbMappings": 2,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 10.26,
+              "externalMB": 20.18,
+              "arrayBuffersMB": 18.2
+            },
+            {
+              "label": "mix",
+              "t": 7.17,
+              "rssMB": 170.68,
+              "rssAnonMB": 62.08,
+              "rssFileMB": 48.66,
+              "rssShmemMB": 59.94,
+              "swapMB": 0,
+              "hwmMB": 171.64,
+              "pssAnonMB": 62.08,
+              "pssFileMB": 11.65,
+              "pssShmemMB": 56.8,
+              "anonymousMB": 62.08,
+              "hotMdbRssMB": 7.52,
+              "coldMdbRssMB": 52.41,
+              "hotMdbMappings": 2,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 12.2,
+              "externalMB": 26.82,
+              "arrayBuffersMB": 24.85
+            },
+            {
+              "label": "mix",
+              "t": 8.18,
+              "rssMB": 174.15,
+              "rssAnonMB": 62.86,
+              "rssFileMB": 48.66,
+              "rssShmemMB": 62.63,
+              "swapMB": 0,
+              "hwmMB": 174.15,
+              "pssAnonMB": 62.86,
+              "pssFileMB": 11.65,
+              "pssShmemMB": 59.47,
+              "anonymousMB": 62.86,
+              "hotMdbRssMB": 7.64,
+              "coldMdbRssMB": 54.98,
+              "hotMdbMappings": 2,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 14.22,
+              "externalMB": 33.69,
+              "arrayBuffersMB": 31.71
+            },
+            {
+              "label": "mix",
+              "t": 9.18,
+              "rssMB": 181.48,
+              "rssAnonMB": 66.67,
+              "rssFileMB": 48.66,
+              "rssShmemMB": 66.15,
+              "swapMB": 0,
+              "hwmMB": 181.48,
+              "pssAnonMB": 66.67,
+              "pssFileMB": 11.65,
+              "pssShmemMB": 62.93,
+              "anonymousMB": 66.67,
+              "hotMdbRssMB": 7.98,
+              "coldMdbRssMB": 58.16,
+              "hotMdbMappings": 2,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 10.19,
+              "externalMB": 19.81,
+              "arrayBuffersMB": 17.83
+            },
+            {
+              "label": "mix",
+              "t": 10.18,
+              "rssMB": 184.28,
+              "rssAnonMB": 66.71,
+              "rssFileMB": 48.66,
+              "rssShmemMB": 68.9,
+              "swapMB": 0,
+              "hwmMB": 184.28,
+              "pssAnonMB": 66.71,
+              "pssFileMB": 11.65,
+              "pssShmemMB": 65.62,
+              "anonymousMB": 66.71,
+              "hotMdbRssMB": 8.11,
+              "coldMdbRssMB": 60.79,
+              "hotMdbMappings": 2,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 12.22,
+              "externalMB": 26.95,
+              "arrayBuffersMB": 24.98
+            },
+            {
+              "label": "mix",
+              "t": 11.18,
+              "rssMB": 184.92,
+              "rssAnonMB": 66.73,
+              "rssFileMB": 48.66,
+              "rssShmemMB": 69.53,
+              "swapMB": 0,
+              "hwmMB": 184.92,
+              "pssAnonMB": 66.73,
+              "pssFileMB": 11.65,
+              "pssShmemMB": 66.25,
+              "anonymousMB": 66.73,
+              "hotMdbRssMB": 8.11,
+              "coldMdbRssMB": 61.41,
+              "hotMdbMappings": 2,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 14.08,
+              "externalMB": 34.11,
+              "arrayBuffersMB": 32.13
+            },
+            {
+              "label": "mix",
+              "t": 12.18,
+              "rssMB": 185.95,
+              "rssAnonMB": 67.63,
+              "rssFileMB": 48.66,
+              "rssShmemMB": 69.65,
+              "swapMB": 0,
+              "hwmMB": 185.95,
+              "pssAnonMB": 67.63,
+              "pssFileMB": 11.65,
+              "pssShmemMB": 66.37,
+              "anonymousMB": 67.63,
+              "hotMdbRssMB": 8.11,
+              "coldMdbRssMB": 61.54,
+              "hotMdbMappings": 2,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 11.45,
+              "externalMB": 21.88,
+              "arrayBuffersMB": 19.9
+            },
+            {
+              "label": "mix",
+              "t": 13.18,
+              "rssMB": 186.08,
+              "rssAnonMB": 67.52,
+              "rssFileMB": 48.66,
+              "rssShmemMB": 69.9,
+              "swapMB": 0,
+              "hwmMB": 186.08,
+              "pssAnonMB": 67.52,
+              "pssFileMB": 11.65,
+              "pssShmemMB": 66.62,
+              "anonymousMB": 67.52,
+              "hotMdbRssMB": 8.36,
+              "coldMdbRssMB": 61.54,
+              "hotMdbMappings": 2,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 10.15,
+              "externalMB": 19.74,
+              "arrayBuffersMB": 17.77
+            },
+            {
+              "label": "mix",
+              "t": 14.18,
+              "rssMB": 185.25,
+              "rssAnonMB": 66.62,
+              "rssFileMB": 48.66,
+              "rssShmemMB": 69.96,
+              "swapMB": 0,
+              "hwmMB": 187.04,
+              "pssAnonMB": 66.62,
+              "pssFileMB": 11.65,
+              "pssShmemMB": 66.62,
+              "anonymousMB": 66.62,
+              "hotMdbRssMB": 8.42,
+              "coldMdbRssMB": 61.54,
+              "hotMdbMappings": 2,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 13.65,
+              "externalMB": 32.94,
+              "arrayBuffersMB": 30.96
+            },
+            {
+              "label": "mix",
+              "t": 15.18,
+              "rssMB": 185.5,
+              "rssAnonMB": 66.87,
+              "rssFileMB": 48.66,
+              "rssShmemMB": 69.96,
+              "swapMB": 0,
+              "hwmMB": 187.04,
+              "pssAnonMB": 66.87,
+              "pssFileMB": 11.65,
+              "pssShmemMB": 66.62,
+              "anonymousMB": 66.87,
+              "hotMdbRssMB": 8.42,
+              "coldMdbRssMB": 61.54,
+              "hotMdbMappings": 2,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 11.04,
+              "externalMB": 20.28,
+              "arrayBuffersMB": 18.31
+            },
+            {
+              "label": "mix",
+              "t": 16.19,
+              "rssMB": 185.39,
+              "rssAnonMB": 66.68,
+              "rssFileMB": 48.66,
+              "rssShmemMB": 70.04,
+              "swapMB": 0,
+              "hwmMB": 187.2,
+              "pssAnonMB": 66.68,
+              "pssFileMB": 11.65,
+              "pssShmemMB": 66.7,
+              "anonymousMB": 66.68,
+              "hotMdbRssMB": 8.49,
+              "coldMdbRssMB": 61.54,
+              "hotMdbMappings": 2,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 10.6,
+              "externalMB": 32.36,
+              "arrayBuffersMB": 16.21
+            },
+            {
+              "label": "mix",
+              "t": 17.17,
+              "rssMB": 185.72,
+              "rssAnonMB": 66.7,
+              "rssFileMB": 48.66,
+              "rssShmemMB": 70.35,
+              "swapMB": 0,
+              "hwmMB": 187.2,
+              "pssAnonMB": 66.7,
+              "pssFileMB": 11.65,
+              "pssShmemMB": 66.88,
+              "anonymousMB": 66.7,
+              "hotMdbRssMB": 8.8,
+              "coldMdbRssMB": 61.54,
+              "hotMdbMappings": 2,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 13.1,
+              "externalMB": 31.09,
+              "arrayBuffersMB": 29.11
+            },
+            {
+              "label": "mix",
+              "t": 18.17,
+              "rssMB": 185.92,
+              "rssAnonMB": 66.9,
+              "rssFileMB": 48.66,
+              "rssShmemMB": 70.35,
+              "swapMB": 0,
+              "hwmMB": 187.2,
+              "pssAnonMB": 66.9,
+              "pssFileMB": 11.65,
+              "pssShmemMB": 66.88,
+              "anonymousMB": 66.9,
+              "hotMdbRssMB": 8.8,
+              "coldMdbRssMB": 61.54,
+              "hotMdbMappings": 2,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 10.38,
+              "externalMB": 18.45,
+              "arrayBuffersMB": 16.47
+            },
+            {
+              "label": "mix",
+              "t": 19.17,
+              "rssMB": 185.72,
+              "rssAnonMB": 66.71,
+              "rssFileMB": 48.66,
+              "rssShmemMB": 70.35,
+              "swapMB": 0,
+              "hwmMB": 187.2,
+              "pssAnonMB": 66.71,
+              "pssFileMB": 11.65,
+              "pssShmemMB": 66.88,
+              "anonymousMB": 66.71,
+              "hotMdbRssMB": 8.8,
+              "coldMdbRssMB": 61.54,
+              "hotMdbMappings": 2,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 12.93,
+              "externalMB": 29.63,
+              "arrayBuffersMB": 27.66
+            },
+            {
+              "label": "mix",
+              "t": 20.17,
+              "rssMB": 185.96,
+              "rssAnonMB": 66.71,
+              "rssFileMB": 48.66,
+              "rssShmemMB": 70.58,
+              "swapMB": 0,
+              "hwmMB": 187.2,
+              "pssAnonMB": 66.71,
+              "pssFileMB": 11.65,
+              "pssShmemMB": 67.11,
+              "anonymousMB": 66.71,
+              "hotMdbRssMB": 9.03,
+              "coldMdbRssMB": 61.54,
+              "hotMdbMappings": 2,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 14.76,
+              "externalMB": 25.7,
+              "arrayBuffersMB": 23.72
+            },
+            {
+              "label": "mix",
+              "t": 21.18,
+              "rssMB": 186.52,
+              "rssAnonMB": 67.23,
+              "rssFileMB": 48.66,
+              "rssShmemMB": 70.63,
+              "swapMB": 0,
+              "hwmMB": 187.2,
+              "pssAnonMB": 67.23,
+              "pssFileMB": 11.65,
+              "pssShmemMB": 67.16,
+              "anonymousMB": 67.23,
+              "hotMdbRssMB": 9.08,
+              "coldMdbRssMB": 61.54,
+              "hotMdbMappings": 2,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 10.69,
+              "externalMB": 19.59,
+              "arrayBuffersMB": 17.61
+            },
+            {
+              "label": "mix",
+              "t": 22.18,
+              "rssMB": 186.61,
+              "rssAnonMB": 67.32,
+              "rssFileMB": 48.66,
+              "rssShmemMB": 70.63,
+              "swapMB": 0,
+              "hwmMB": 187.2,
+              "pssAnonMB": 67.32,
+              "pssFileMB": 11.65,
+              "pssShmemMB": 67.16,
+              "anonymousMB": 67.32,
+              "hotMdbRssMB": 9.08,
+              "coldMdbRssMB": 61.54,
+              "hotMdbMappings": 2,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 15,
+              "externalMB": 33.72,
+              "arrayBuffersMB": 31.74
+            },
+            {
+              "label": "mix",
+              "t": 23.18,
+              "rssMB": 186.62,
+              "rssAnonMB": 67.33,
+              "rssFileMB": 48.66,
+              "rssShmemMB": 70.63,
+              "swapMB": 0,
+              "hwmMB": 187.2,
+              "pssAnonMB": 67.33,
+              "pssFileMB": 11.65,
+              "pssShmemMB": 67.16,
+              "anonymousMB": 67.33,
+              "hotMdbRssMB": 9.08,
+              "coldMdbRssMB": 61.54,
+              "hotMdbMappings": 2,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 12.47,
+              "externalMB": 28.28,
+              "arrayBuffersMB": 26.31
+            },
+            {
+              "label": "mix",
+              "t": 24.18,
+              "rssMB": 186.96,
+              "rssAnonMB": 67.34,
+              "rssFileMB": 48.66,
+              "rssShmemMB": 70.95,
+              "swapMB": 0,
+              "hwmMB": 187.2,
+              "pssAnonMB": 67.34,
+              "pssFileMB": 11.65,
+              "pssShmemMB": 67.48,
+              "anonymousMB": 67.34,
+              "hotMdbRssMB": 9.41,
+              "coldMdbRssMB": 61.54,
+              "hotMdbMappings": 2,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 13.97,
+              "externalMB": 23.04,
+              "arrayBuffersMB": 21.06
+            },
+            {
+              "label": "mix",
+              "t": 25.18,
+              "rssMB": 187.09,
+              "rssAnonMB": 67.35,
+              "rssFileMB": 48.66,
+              "rssShmemMB": 71.08,
+              "swapMB": 0,
+              "hwmMB": 187.2,
+              "pssAnonMB": 67.35,
+              "pssFileMB": 11.65,
+              "pssShmemMB": 67.61,
+              "anonymousMB": 67.35,
+              "hotMdbRssMB": 9.53,
+              "coldMdbRssMB": 61.54,
+              "hotMdbMappings": 2,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 13.87,
+              "externalMB": 30.12,
+              "arrayBuffersMB": 28.14
+            },
+            {
+              "label": "mix",
+              "t": 26.18,
+              "rssMB": 187.25,
+              "rssAnonMB": 67.44,
+              "rssFileMB": 48.66,
+              "rssShmemMB": 71.14,
+              "swapMB": 0,
+              "hwmMB": 187.25,
+              "pssAnonMB": 67.44,
+              "pssFileMB": 11.65,
+              "pssShmemMB": 67.61,
+              "anonymousMB": 67.44,
+              "hotMdbRssMB": 9.59,
+              "coldMdbRssMB": 61.54,
+              "hotMdbMappings": 2,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 10.9,
+              "externalMB": 20.1,
+              "arrayBuffersMB": 18.13
+            },
+            {
+              "label": "mix",
+              "t": 27.17,
+              "rssMB": 187.26,
+              "rssAnonMB": 67.46,
+              "rssFileMB": 48.66,
+              "rssShmemMB": 71.14,
+              "swapMB": 0,
+              "hwmMB": 187.26,
+              "pssAnonMB": 67.46,
+              "pssFileMB": 11.65,
+              "pssShmemMB": 67.61,
+              "anonymousMB": 67.46,
+              "hotMdbRssMB": 9.59,
+              "coldMdbRssMB": 61.54,
+              "hotMdbMappings": 2,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 11.96,
+              "externalMB": 26.36,
+              "arrayBuffersMB": 24.38
+            },
+            {
+              "label": "mix",
+              "t": 28.18,
+              "rssMB": 187.67,
+              "rssAnonMB": 67.47,
+              "rssFileMB": 48.66,
+              "rssShmemMB": 71.54,
+              "swapMB": 0,
+              "hwmMB": 187.67,
+              "pssAnonMB": 67.47,
+              "pssFileMB": 11.65,
+              "pssShmemMB": 68,
+              "anonymousMB": 67.47,
+              "hotMdbRssMB": 9.99,
+              "coldMdbRssMB": 61.54,
+              "hotMdbMappings": 2,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 14.34,
+              "externalMB": 24.22,
+              "arrayBuffersMB": 22.24
+            },
+            {
+              "label": "mix",
+              "t": 29.18,
+              "rssMB": 187.81,
+              "rssAnonMB": 67.49,
+              "rssFileMB": 48.66,
+              "rssShmemMB": 71.66,
+              "swapMB": 0,
+              "hwmMB": 187.81,
+              "pssAnonMB": 67.49,
+              "pssFileMB": 11.65,
+              "pssShmemMB": 68.13,
+              "anonymousMB": 67.49,
+              "hotMdbRssMB": 10.11,
+              "coldMdbRssMB": 61.54,
+              "hotMdbMappings": 2,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 10,
+              "externalMB": 19.75,
+              "arrayBuffersMB": 17.78
+            },
+            {
+              "label": "end+gc",
+              "t": 30.18,
+              "rssMB": 187.82,
+              "rssAnonMB": 67.49,
+              "rssFileMB": 48.66,
+              "rssShmemMB": 71.67,
+              "swapMB": 0,
+              "hwmMB": 187.82,
+              "pssAnonMB": 67.49,
+              "pssFileMB": 11.65,
+              "pssShmemMB": 68.14,
+              "anonymousMB": 67.49,
+              "hotMdbRssMB": 10.13,
+              "coldMdbRssMB": 61.54,
+              "hotMdbMappings": 2,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 9.07,
+              "externalMB": 25.38,
+              "arrayBuffersMB": 16.19
+            }
+          ]
+        },
+        "checks": [
+          {
+            "name": "RSS peak (Node + TanoDB only) <= 270 MB",
+            "value": 187.82,
+            "unit": "MB",
+            "op": "<=",
+            "limit": 270,
+            "scale": null,
+            "projected": null,
+            "localPass": true,
+            "pass": true
+          },
+          {
+            "name": "anonymous peak <= 200 MB",
+            "value": 67.63,
+            "unit": "MB",
+            "op": "<=",
+            "limit": 200,
+            "scale": null,
+            "projected": null,
+            "localPass": true,
+            "pass": true
+          },
+          {
+            "name": "VmSwap == 0",
+            "value": 0,
+            "unit": "MB",
+            "op": "<=",
+            "limit": 0,
+            "scale": null,
+            "projected": null,
+            "localPass": true,
+            "pass": true,
+            "note": "this dev box swaps to zram under its own load; a non-zero value here is host pressure, not TanoDB"
+          },
+          {
+            "name": "RSS slope, second half of mix",
+            "value": 10.517,
+            "unit": "MB/min",
+            "op": "<=",
+            "limit": 0.5,
+            "scale": null,
+            "projected": null,
+            "localPass": false,
+            "pass": null,
+            "informational": true,
+            "note": "over 15 s: the mmap working set is still warming up; the gate needs --seconds 1800 (last 15 min)"
+          },
+          {
+            "name": "anonymous end (after gc) <= 88 MB (§6.4 Node floor 42 + TanoDB JS 10 + lmdb native 14 + GC 22)",
+            "value": 67.49,
+            "unit": "MB",
+            "op": "<=",
+            "limit": 88,
+            "scale": null,
+            "projected": null,
+            "localPass": true,
+            "pass": true
+          },
+          {
+            "name": "file-backed .mdb resident <= 53 MB (§6.3 hot 35 + cold 18)",
+            "value": 71.67,
+            "unit": "MB",
+            "op": "<=",
+            "limit": 53,
+            "scale": null,
+            "projected": null,
+            "localPass": false,
+            "pass": false,
+            "note": "scale 0.03: branch pages are ~0.03x of full size, active set is full size"
+          },
+          {
+            "name": "hot.mdb resident <= 35 MB",
+            "value": 10.13,
+            "unit": "MB",
+            "op": "<=",
+            "limit": 35,
+            "scale": null,
+            "projected": null,
+            "localPass": true,
+            "pass": null,
+            "informational": true
+          },
+          {
+            "name": "cold.mdb resident <= 18 MB",
+            "value": 61.54,
+            "unit": "MB",
+            "op": "<=",
+            "limit": 18,
+            "scale": null,
+            "projected": null,
+            "localPass": false,
+            "pass": null,
+            "informational": true
+          },
+          {
+            "name": "mix errors",
+            "value": 0,
+            "unit": "",
+            "op": "==",
+            "limit": 0,
+            "scale": null,
+            "projected": null,
+            "localPass": true,
+            "pass": true
+          }
+        ],
+        "notes": [
+          "tmpfs: .mdb mappings count as RssShmem, added to file-backed here",
+          "process RSS excludes discord.js (40 MB), Express/SSR (16 MB), feature logic (24 MB) and the 24 MB CacheBudget of §6.4: this is the TanoDB slice only",
+          "working-set residency (>= 95 %) is trivially 100 % here: the box has free RAM; it is only meaningful under memory pressure (bench 12, needs a cgroup)"
+        ],
+        "pass": false,
+        "finishedAt": "2026-10-14T08:35:28.607Z"
+      }
+    },
+    {
+      "label": "03-rss-at-scale (proposed: hot mapSize 2 GiB + cold noReadAhead)",
+      "file": "03-rss-at-scale.mjs",
+      "argv": [
+        "--scale",
+        "0.03",
+        "--seconds",
+        "30",
+        "--reuse",
+        "--hot-mapsize",
+        "2147483648",
+        "--cold-noreadahead"
+      ],
+      "exit": 1,
+      "seconds": 30.4,
+      "result": {
+        "bench": "03-rss-at-scale",
+        "startedAt": "2026-10-14T08:35:28.751Z",
+        "host": {
+          "cpu": "AMD Ryzen 5 7535HS with Radeon Graphics",
+          "cores": 12,
+          "memMB": 15277,
+          "node": "v22.23.1",
+          "lmdb": "3.5.6",
+          "kernel": "7.1.5-201.fc44.x86_64",
+          "swap": "/dev/zram0",
+          "loadavg": [
+            0.89,
+            1.19,
+            1.3
+          ]
+        },
+        "args": {
+          "scale": 0.03,
+          "seconds": 30,
+          "rate": 500,
+          "rows": {
+            "guilds": 500,
+            "users": 6000,
+            "levels": 6000,
+            "events": 150000,
+            "configs": 1500,
+            "schemes": 300,
+            "cases": 3000
+          },
+          "dir": "$TMPDIR/bench-data/03-rss"
+        },
+        "calibration": {
+          "applied": true,
+          "factors": {
+            "cpu": 2.4,
+            "memcpy": 2.613,
+            "seqWrite": null,
+            "randWrite": null,
+            "fsync": null,
+            "targetSeqWriteMBps": 22.5,
+            "targetFsyncMs": 2
+          }
+        },
+        "results": {
+          "fs": {
+            "dir": "$TMPDIR/bench-data",
+            "type": "tmpfs",
+            "source": "tmpfs[/.flatpak/com.visualstudio.code/tmp]",
+            "compress": null,
+            "realDisk": false
+          },
+          "gen": {
+            "reused": true
+          },
+          "pageCacheEvictedBeforeMix": null,
+          "mix": {
+            "seconds": 30,
+            "msgs": 15120,
+            "commits": 96,
+            "panelReads": 29,
+            "errors": 0,
+            "errorSamples": [],
+            "msgsPerSec": 503
+          },
+          "memory": {
+            "atNodeStart": {
+              "label": "node+imports",
+              "t": 0.12,
+              "rssMB": 68.96,
+              "rssAnonMB": 20.92,
+              "rssFileMB": 48.04,
+              "rssShmemMB": 0,
+              "swapMB": 0,
+              "hwmMB": 68.96,
+              "pssAnonMB": 20.93,
+              "pssFileMB": 11.34,
+              "pssShmemMB": 0,
+              "anonymousMB": 20.93,
+              "hotMdbRssMB": 0,
+              "coldMdbRssMB": 0,
+              "hotMdbMappings": 0,
+              "coldMdbMappings": 0,
+              "heapUsedMB": 7.44,
+              "externalMB": 18.1,
+              "arrayBuffersMB": 16.03
+            },
+            "afterOpen": {
+              "label": "opened",
+              "t": 0.14,
+              "rssMB": 72.88,
+              "rssAnonMB": 24.04,
+              "rssFileMB": 48.36,
+              "rssShmemMB": 0.49,
+              "swapMB": 0,
+              "hwmMB": 72.88,
+              "pssAnonMB": 24.04,
+              "pssFileMB": 11.47,
+              "pssShmemMB": 0.49,
+              "anonymousMB": 24.04,
+              "hotMdbRssMB": 0.36,
+              "coldMdbRssMB": 0.13,
+              "hotMdbMappings": 1,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 8.28,
+              "externalMB": 18.15,
+              "arrayBuffersMB": 16.17
+            },
+            "end": {
+              "label": "end+gc",
+              "t": 30.19,
+              "rssMB": 174.33,
+              "rssAnonMB": 65.31,
+              "rssFileMB": 48.59,
+              "rssShmemMB": 60.43,
+              "swapMB": 0,
+              "hwmMB": 175.13,
+              "pssAnonMB": 65.76,
+              "pssFileMB": 11.57,
+              "pssShmemMB": 60.43,
+              "anonymousMB": 65.76,
+              "hotMdbRssMB": 7.5,
+              "coldMdbRssMB": 52.91,
+              "hotMdbMappings": 1,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 9.12,
+              "externalMB": 32.15,
+              "arrayBuffersMB": 16.18
+            },
+            "peakRssMB": 174.33,
+            "peakAnonMB": 67.13,
+            "peakHotMdbRssMB": 7.5,
+            "peakColdMdbRssMB": 52.91,
+            "peakSwapMB": 0,
+            "hotMdbMappingsEnd": 1,
+            "coldMdbMappingsEnd": 1,
+            "rssSlopeMBPerMinSecondHalf": 23.319,
+            "hotResidentShareOfFile": 0.974,
+            "coldResidentShareOfFile": 0.761
+          },
+          "files": {
+            "hotMB": 7.7,
+            "coldMB": 69.5
+          },
+          "bytesPerRecord": {
+            "user": {
+              "entries": 6000,
+              "dataBytesPerRecord": 103.1,
+              "withIndexesBytesPerRecord": 133.1
+            },
+            "level": {
+              "entries": 21477,
+              "dataBytesPerRecord": 43.5,
+              "withIndexesBytesPerRecord": 70.4
+            },
+            "feature_config": {
+              "entries": 1500,
+              "dataBytesPerRecord": 811,
+              "withIndexesBytesPerRecord": 811
+            },
+            "builder_scheme": {
+              "entries": 300,
+              "dataBytesPerRecord": 3003.7,
+              "withIndexesBytesPerRecord": 3058.3
+            },
+            "mod_case": {
+              "entries": 3058,
+              "dataBytesPerRecord": 100.5,
+              "withIndexesBytesPerRecord": 194.2
+            },
+            "event_log": {
+              "entries": 180215,
+              "dataBytesPerRecord": 331,
+              "withIndexesBytesPerRecord": 331
+            },
+            "guild": {
+              "entries": 500,
+              "dataBytesPerRecord": 122.9,
+              "withIndexesBytesPerRecord": 122.9
+            }
+          },
+          "docBytesPerRow": {
+            "user": 60,
+            "level": 6,
+            "feature_config": 700,
+            "builder_scheme": 1500,
+            "mod_case": 150,
+            "event_log": 200,
+            "guild": 70,
+            "note": "§5 logical B/row; ×1.35 B+tree fill-factor per §5.10"
+          },
+          "perCollection": {
+            "guild": {
+              "env": "hot",
+              "entries": 500,
+              "pages": 15,
+              "bytesOnPages": 61440,
+              "bytesPerRecord": 122.9
+            },
+            "user": {
+              "env": "hot",
+              "entries": 6000,
+              "pages": 151,
+              "bytesOnPages": 618496,
+              "bytesPerRecord": 103.1
+            },
+            "user_by_plan": {
+              "env": "hot",
+              "entries": 6000,
+              "pages": 41,
+              "bytesOnPages": 167936,
+              "bytesPerRecord": 28
+            },
+            "user_by_expiry": {
+              "env": "hot",
+              "entries": 191,
+              "pages": 3,
+              "bytesOnPages": 12288,
+              "bytesPerRecord": 64.3
+            },
+            "level": {
+              "env": "hot",
+              "entries": 21477,
+              "pages": 228,
+              "bytesOnPages": 933888,
+              "bytesPerRecord": 43.5
+            },
+            "level_by_xp": {
+              "env": "hot",
+              "entries": 21477,
+              "pages": 141,
+              "bytesOnPages": 577536,
+              "bytesPerRecord": 26.9
+            },
+            "feature_config": {
+              "env": "hot",
+              "entries": 1500,
+              "pages": 297,
+              "bytesOnPages": 1216512,
+              "bytesPerRecord": 811
+            },
+            "mod_case": {
+              "env": "hot",
+              "entries": 3058,
+              "pages": 75,
+              "bytesOnPages": 307200,
+              "bytesPerRecord": 100.5
+            },
+            "case_by_target": {
+              "env": "hot",
+              "entries": 3058,
+              "pages": 34,
+              "bytesOnPages": 139264,
+              "bytesPerRecord": 45.5
+            },
+            "case_by_mod": {
+              "env": "hot",
+              "entries": 3058,
+              "pages": 33,
+              "bytesOnPages": 135168,
+              "bytesPerRecord": 44.2
+            },
+            "case_active": {
+              "env": "hot",
+              "entries": 168,
+              "pages": 3,
+              "bytesOnPages": 12288,
+              "bytesPerRecord": 73.1
+            },
+            "builder_scheme": {
+              "env": "hot",
+              "entries": 300,
+              "pages": 220,
+              "bytesOnPages": 901120,
+              "bytesPerRecord": 3003.7
+            },
+            "scheme_by_updated": {
+              "env": "hot",
+              "entries": 300,
+              "pages": 4,
+              "bytesOnPages": 16384,
+              "bytesPerRecord": 54.6
+            },
+            "kv": {
+              "env": "hot",
+              "entries": 1,
+              "pages": 1,
+              "bytesOnPages": 4096,
+              "bytesPerRecord": 4096
+            },
+            "event_log_202610": {
+              "env": "cold",
+              "entries": 180215,
+              "pages": 7282,
+              "bytesOnPages": 59654144,
+              "bytesPerRecord": 331
+            }
+          },
+          "samples": [
+            {
+              "label": "node+imports",
+              "t": 0.12,
+              "rssMB": 68.96,
+              "rssAnonMB": 20.92,
+              "rssFileMB": 48.04,
+              "rssShmemMB": 0,
+              "swapMB": 0,
+              "hwmMB": 68.96,
+              "pssAnonMB": 20.93,
+              "pssFileMB": 11.34,
+              "pssShmemMB": 0,
+              "anonymousMB": 20.93,
+              "hotMdbRssMB": 0,
+              "coldMdbRssMB": 0,
+              "hotMdbMappings": 0,
+              "coldMdbMappings": 0,
+              "heapUsedMB": 7.44,
+              "externalMB": 18.1,
+              "arrayBuffersMB": 16.03
+            },
+            {
+              "label": "opened",
+              "t": 0.14,
+              "rssMB": 72.88,
+              "rssAnonMB": 24.04,
+              "rssFileMB": 48.36,
+              "rssShmemMB": 0.49,
+              "swapMB": 0,
+              "hwmMB": 72.88,
+              "pssAnonMB": 24.04,
+              "pssFileMB": 11.47,
+              "pssShmemMB": 0.49,
+              "anonymousMB": 24.04,
+              "hotMdbRssMB": 0.36,
+              "coldMdbRssMB": 0.13,
+              "hotMdbMappings": 1,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 8.28,
+              "externalMB": 18.15,
+              "arrayBuffersMB": 16.17
+            },
+            {
+              "label": "mix",
+              "t": 1.18,
+              "rssMB": 92.75,
+              "rssAnonMB": 38.04,
+              "rssFileMB": 48.53,
+              "rssShmemMB": 6.18,
+              "swapMB": 0,
+              "hwmMB": 92.75,
+              "pssAnonMB": 38.04,
+              "pssFileMB": 11.54,
+              "pssShmemMB": 6.18,
+              "anonymousMB": 38.04,
+              "hotMdbRssMB": 5.73,
+              "coldMdbRssMB": 0.44,
+              "hotMdbMappings": 1,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 9.04,
+              "externalMB": 24.17,
+              "arrayBuffersMB": 17.06
+            },
+            {
+              "label": "mix",
+              "t": 2.18,
+              "rssMB": 123.71,
+              "rssAnonMB": 51.14,
+              "rssFileMB": 48.53,
+              "rssShmemMB": 24.03,
+              "swapMB": 0,
+              "hwmMB": 123.71,
+              "pssAnonMB": 51.2,
+              "pssFileMB": 11.54,
+              "pssShmemMB": 24.03,
+              "anonymousMB": 51.2,
+              "hotMdbRssMB": 5.86,
+              "coldMdbRssMB": 18.16,
+              "hotMdbMappings": 1,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 15.57,
+              "externalMB": 34.18,
+              "arrayBuffersMB": 32.2
+            },
+            {
+              "label": "mix",
+              "t": 3.18,
+              "rssMB": 143.19,
+              "rssAnonMB": 58.25,
+              "rssFileMB": 48.59,
+              "rssShmemMB": 36.34,
+              "swapMB": 0,
+              "hwmMB": 143.19,
+              "pssAnonMB": 58.25,
+              "pssFileMB": 11.57,
+              "pssShmemMB": 36.34,
+              "anonymousMB": 58.25,
+              "hotMdbRssMB": 5.86,
+              "coldMdbRssMB": 30.48,
+              "hotMdbMappings": 1,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 11.08,
+              "externalMB": 20.44,
+              "arrayBuffersMB": 18.46
+            },
+            {
+              "label": "mix",
+              "t": 4.18,
+              "rssMB": 153.5,
+              "rssAnonMB": 59.31,
+              "rssFileMB": 48.59,
+              "rssShmemMB": 45.59,
+              "swapMB": 0,
+              "hwmMB": 153.5,
+              "pssAnonMB": 59.31,
+              "pssFileMB": 11.57,
+              "pssShmemMB": 45.59,
+              "anonymousMB": 59.31,
+              "hotMdbRssMB": 5.86,
+              "coldMdbRssMB": 39.73,
+              "hotMdbMappings": 1,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 13.32,
+              "externalMB": 27.9,
+              "arrayBuffersMB": 25.91
+            },
+            {
+              "label": "mix",
+              "t": 5.18,
+              "rssMB": 162.43,
+              "rssAnonMB": 62.67,
+              "rssFileMB": 48.59,
+              "rssShmemMB": 51.17,
+              "swapMB": 0,
+              "hwmMB": 162.43,
+              "pssAnonMB": 62.67,
+              "pssFileMB": 11.57,
+              "pssShmemMB": 51.17,
+              "anonymousMB": 62.67,
+              "hotMdbRssMB": 6.87,
+              "coldMdbRssMB": 44.29,
+              "hotMdbMappings": 1,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 16.13,
+              "externalMB": 33.78,
+              "arrayBuffersMB": 31.79
+            },
+            {
+              "label": "mix",
+              "t": 6.18,
+              "rssMB": 164.42,
+              "rssAnonMB": 64.16,
+              "rssFileMB": 48.59,
+              "rssShmemMB": 51.67,
+              "swapMB": 0,
+              "hwmMB": 164.42,
+              "pssAnonMB": 64.16,
+              "pssFileMB": 11.57,
+              "pssShmemMB": 51.67,
+              "anonymousMB": 64.16,
+              "hotMdbRssMB": 6.87,
+              "coldMdbRssMB": 44.79,
+              "hotMdbMappings": 1,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 10.47,
+              "externalMB": 20.57,
+              "arrayBuffersMB": 18.6
+            },
+            {
+              "label": "mix",
+              "t": 7.18,
+              "rssMB": 163.71,
+              "rssAnonMB": 63.38,
+              "rssFileMB": 48.59,
+              "rssShmemMB": 51.73,
+              "swapMB": 0,
+              "hwmMB": 164.58,
+              "pssAnonMB": 63.38,
+              "pssFileMB": 11.57,
+              "pssShmemMB": 51.73,
+              "anonymousMB": 63.38,
+              "hotMdbRssMB": 6.87,
+              "coldMdbRssMB": 44.85,
+              "hotMdbMappings": 1,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 14.2,
+              "externalMB": 34.14,
+              "arrayBuffersMB": 32.17
+            },
+            {
+              "label": "mix",
+              "t": 8.18,
+              "rssMB": 164.77,
+              "rssAnonMB": 64.32,
+              "rssFileMB": 48.59,
+              "rssShmemMB": 51.86,
+              "swapMB": 0,
+              "hwmMB": 164.77,
+              "pssAnonMB": 64.32,
+              "pssFileMB": 11.57,
+              "pssShmemMB": 51.86,
+              "anonymousMB": 64.32,
+              "hotMdbRssMB": 6.87,
+              "coldMdbRssMB": 44.98,
+              "hotMdbMappings": 1,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 12.99,
+              "externalMB": 29.09,
+              "arrayBuffersMB": 27.12
+            },
+            {
+              "label": "mix",
+              "t": 9.17,
+              "rssMB": 164.28,
+              "rssAnonMB": 63.77,
+              "rssFileMB": 48.59,
+              "rssShmemMB": 51.92,
+              "swapMB": 0,
+              "hwmMB": 165.23,
+              "pssAnonMB": 63.77,
+              "pssFileMB": 11.57,
+              "pssShmemMB": 51.92,
+              "anonymousMB": 63.77,
+              "hotMdbRssMB": 6.87,
+              "coldMdbRssMB": 45.04,
+              "hotMdbMappings": 1,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 11.44,
+              "externalMB": 24.45,
+              "arrayBuffersMB": 22.47
+            },
+            {
+              "label": "mix",
+              "t": 10.18,
+              "rssMB": 164.79,
+              "rssAnonMB": 63.9,
+              "rssFileMB": 48.59,
+              "rssShmemMB": 52.29,
+              "swapMB": 0,
+              "hwmMB": 165.23,
+              "pssAnonMB": 64.16,
+              "pssFileMB": 11.57,
+              "pssShmemMB": 52.29,
+              "anonymousMB": 64.16,
+              "hotMdbRssMB": 6.87,
+              "coldMdbRssMB": 45.41,
+              "hotMdbMappings": 1,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 13.48,
+              "externalMB": 31.54,
+              "arrayBuffersMB": 29.57
+            },
+            {
+              "label": "mix",
+              "t": 11.17,
+              "rssMB": 168.68,
+              "rssAnonMB": 64.86,
+              "rssFileMB": 48.59,
+              "rssShmemMB": 55.23,
+              "swapMB": 0,
+              "hwmMB": 168.68,
+              "pssAnonMB": 64.86,
+              "pssFileMB": 11.57,
+              "pssShmemMB": 55.23,
+              "anonymousMB": 64.86,
+              "hotMdbRssMB": 6.87,
+              "coldMdbRssMB": 48.35,
+              "hotMdbMappings": 1,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 10.38,
+              "externalMB": 19.49,
+              "arrayBuffersMB": 17.52
+            },
+            {
+              "label": "mix",
+              "t": 12.17,
+              "rssMB": 169.01,
+              "rssAnonMB": 64.87,
+              "rssFileMB": 48.59,
+              "rssShmemMB": 55.54,
+              "swapMB": 0,
+              "hwmMB": 169.01,
+              "pssAnonMB": 64.87,
+              "pssFileMB": 11.57,
+              "pssShmemMB": 55.54,
+              "anonymousMB": 64.87,
+              "hotMdbRssMB": 6.87,
+              "coldMdbRssMB": 48.66,
+              "hotMdbMappings": 1,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 12.22,
+              "externalMB": 26.26,
+              "arrayBuffersMB": 24.29
+            },
+            {
+              "label": "mix",
+              "t": 13.18,
+              "rssMB": 167.96,
+              "rssAnonMB": 63.68,
+              "rssFileMB": 48.59,
+              "rssShmemMB": 55.69,
+              "swapMB": 0,
+              "hwmMB": 168.35,
+              "pssAnonMB": 63.68,
+              "pssFileMB": 11.57,
+              "pssShmemMB": 55.69,
+              "anonymousMB": 63.68,
+              "hotMdbRssMB": 6.89,
+              "coldMdbRssMB": 48.79,
+              "hotMdbMappings": 1,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 13.61,
+              "externalMB": 32.56,
+              "arrayBuffersMB": 30.59
+            },
+            {
+              "label": "mix",
+              "t": 14.18,
+              "rssMB": 169.26,
+              "rssAnonMB": 64.97,
+              "rssFileMB": 48.59,
+              "rssShmemMB": 55.69,
+              "swapMB": 0,
+              "hwmMB": 169.26,
+              "pssAnonMB": 64.97,
+              "pssFileMB": 11.57,
+              "pssShmemMB": 55.69,
+              "anonymousMB": 64.97,
+              "hotMdbRssMB": 6.89,
+              "coldMdbRssMB": 48.79,
+              "hotMdbMappings": 1,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 11.92,
+              "externalMB": 26,
+              "arrayBuffersMB": 24.02
+            },
+            {
+              "label": "mix",
+              "t": 15.17,
+              "rssMB": 169.49,
+              "rssAnonMB": 65.2,
+              "rssFileMB": 48.59,
+              "rssShmemMB": 55.69,
+              "swapMB": 0,
+              "hwmMB": 169.49,
+              "pssAnonMB": 65.2,
+              "pssFileMB": 11.57,
+              "pssShmemMB": 55.69,
+              "anonymousMB": 65.2,
+              "hotMdbRssMB": 6.89,
+              "coldMdbRssMB": 48.79,
+              "hotMdbMappings": 1,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 13.64,
+              "externalMB": 31.8,
+              "arrayBuffersMB": 29.82
+            },
+            {
+              "label": "mix",
+              "t": 16.19,
+              "rssMB": 171.42,
+              "rssAnonMB": 67.13,
+              "rssFileMB": 48.59,
+              "rssShmemMB": 55.7,
+              "swapMB": 0,
+              "hwmMB": 171.42,
+              "pssAnonMB": 67.21,
+              "pssFileMB": 11.57,
+              "pssShmemMB": 55.7,
+              "anonymousMB": 67.21,
+              "hotMdbRssMB": 6.9,
+              "coldMdbRssMB": 48.79,
+              "hotMdbMappings": 1,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 10.02,
+              "externalMB": 31.75,
+              "arrayBuffersMB": 16.21
+            },
+            {
+              "label": "mix",
+              "t": 17.17,
+              "rssMB": 169.63,
+              "rssAnonMB": 65.33,
+              "rssFileMB": 48.59,
+              "rssShmemMB": 55.7,
+              "swapMB": 0,
+              "hwmMB": 170.38,
+              "pssAnonMB": 65.33,
+              "pssFileMB": 11.57,
+              "pssShmemMB": 55.7,
+              "anonymousMB": 65.33,
+              "hotMdbRssMB": 6.9,
+              "coldMdbRssMB": 48.79,
+              "hotMdbMappings": 1,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 14.48,
+              "externalMB": 31.64,
+              "arrayBuffersMB": 29.67
+            },
+            {
+              "label": "mix",
+              "t": 18.17,
+              "rssMB": 168.75,
+              "rssAnonMB": 64.45,
+              "rssFileMB": 48.59,
+              "rssShmemMB": 55.7,
+              "swapMB": 0,
+              "hwmMB": 170.54,
+              "pssAnonMB": 64.45,
+              "pssFileMB": 11.57,
+              "pssShmemMB": 55.7,
+              "anonymousMB": 64.45,
+              "hotMdbRssMB": 6.9,
+              "coldMdbRssMB": 48.79,
+              "hotMdbMappings": 1,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 14.79,
+              "externalMB": 32.56,
+              "arrayBuffersMB": 30.58
+            },
+            {
+              "label": "mix",
+              "t": 19.18,
+              "rssMB": 169.26,
+              "rssAnonMB": 64.97,
+              "rssFileMB": 48.59,
+              "rssShmemMB": 55.7,
+              "swapMB": 0,
+              "hwmMB": 170.54,
+              "pssAnonMB": 64.97,
+              "pssFileMB": 11.57,
+              "pssShmemMB": 55.7,
+              "anonymousMB": 64.97,
+              "hotMdbRssMB": 6.9,
+              "coldMdbRssMB": 48.79,
+              "hotMdbMappings": 1,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 10.48,
+              "externalMB": 20.07,
+              "arrayBuffersMB": 18.1
+            },
+            {
+              "label": "mix",
+              "t": 20.18,
+              "rssMB": 169.4,
+              "rssAnonMB": 65.02,
+              "rssFileMB": 48.59,
+              "rssShmemMB": 55.79,
+              "swapMB": 0,
+              "hwmMB": 170.54,
+              "pssAnonMB": 65.02,
+              "pssFileMB": 11.57,
+              "pssShmemMB": 55.79,
+              "anonymousMB": 65.02,
+              "hotMdbRssMB": 6.93,
+              "coldMdbRssMB": 48.85,
+              "hotMdbMappings": 1,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 15.01,
+              "externalMB": 23.22,
+              "arrayBuffersMB": 21.24
+            },
+            {
+              "label": "mix",
+              "t": 21.18,
+              "rssMB": 169.42,
+              "rssAnonMB": 65.03,
+              "rssFileMB": 48.59,
+              "rssShmemMB": 55.79,
+              "swapMB": 0,
+              "hwmMB": 170.54,
+              "pssAnonMB": 65.03,
+              "pssFileMB": 11.57,
+              "pssShmemMB": 55.79,
+              "anonymousMB": 65.03,
+              "hotMdbRssMB": 6.93,
+              "coldMdbRssMB": 48.85,
+              "hotMdbMappings": 1,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 14.52,
+              "externalMB": 31.9,
+              "arrayBuffersMB": 29.92
+            },
+            {
+              "label": "mix",
+              "t": 22.17,
+              "rssMB": 169.44,
+              "rssAnonMB": 65.05,
+              "rssFileMB": 48.59,
+              "rssShmemMB": 55.79,
+              "swapMB": 0,
+              "hwmMB": 170.54,
+              "pssAnonMB": 65.05,
+              "pssFileMB": 11.57,
+              "pssShmemMB": 55.79,
+              "anonymousMB": 65.05,
+              "hotMdbRssMB": 6.93,
+              "coldMdbRssMB": 48.85,
+              "hotMdbMappings": 1,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 9.95,
+              "externalMB": 18.64,
+              "arrayBuffersMB": 16.67
+            },
+            {
+              "label": "mix",
+              "t": 23.18,
+              "rssMB": 169.44,
+              "rssAnonMB": 65.05,
+              "rssFileMB": 48.59,
+              "rssShmemMB": 55.79,
+              "swapMB": 0,
+              "hwmMB": 170.54,
+              "pssAnonMB": 65.05,
+              "pssFileMB": 11.57,
+              "pssShmemMB": 55.79,
+              "anonymousMB": 65.05,
+              "hotMdbRssMB": 6.93,
+              "coldMdbRssMB": 48.85,
+              "hotMdbMappings": 1,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 15.16,
+              "externalMB": 33.4,
+              "arrayBuffersMB": 31.42
+            },
+            {
+              "label": "mix",
+              "t": 24.18,
+              "rssMB": 170.01,
+              "rssAnonMB": 65.44,
+              "rssFileMB": 48.59,
+              "rssShmemMB": 55.98,
+              "swapMB": 0,
+              "hwmMB": 170.54,
+              "pssAnonMB": 65.44,
+              "pssFileMB": 11.57,
+              "pssShmemMB": 55.98,
+              "anonymousMB": 65.44,
+              "hotMdbRssMB": 7,
+              "coldMdbRssMB": 48.98,
+              "hotMdbMappings": 1,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 10.01,
+              "externalMB": 19.68,
+              "arrayBuffersMB": 17.71
+            },
+            {
+              "label": "mix",
+              "t": 25.18,
+              "rssMB": 173.74,
+              "rssAnonMB": 65.48,
+              "rssFileMB": 48.59,
+              "rssShmemMB": 59.67,
+              "swapMB": 0,
+              "hwmMB": 173.74,
+              "pssAnonMB": 65.48,
+              "pssFileMB": 11.57,
+              "pssShmemMB": 59.67,
+              "anonymousMB": 65.48,
+              "hotMdbRssMB": 7.12,
+              "coldMdbRssMB": 52.54,
+              "hotMdbMappings": 1,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 11.99,
+              "externalMB": 26.67,
+              "arrayBuffersMB": 24.69
+            },
+            {
+              "label": "mix",
+              "t": 26.17,
+              "rssMB": 174.14,
+              "rssAnonMB": 65.69,
+              "rssFileMB": 48.59,
+              "rssShmemMB": 59.86,
+              "swapMB": 0,
+              "hwmMB": 174.14,
+              "pssAnonMB": 65.69,
+              "pssFileMB": 11.57,
+              "pssShmemMB": 59.86,
+              "anonymousMB": 65.69,
+              "hotMdbRssMB": 7.12,
+              "coldMdbRssMB": 52.73,
+              "hotMdbMappings": 1,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 15.03,
+              "externalMB": 32.05,
+              "arrayBuffersMB": 30.08
+            },
+            {
+              "label": "mix",
+              "t": 27.18,
+              "rssMB": 174.14,
+              "rssAnonMB": 65.5,
+              "rssFileMB": 48.59,
+              "rssShmemMB": 60.04,
+              "swapMB": 0,
+              "hwmMB": 174.14,
+              "pssAnonMB": 65.5,
+              "pssFileMB": 11.57,
+              "pssShmemMB": 60.04,
+              "anonymousMB": 65.5,
+              "hotMdbRssMB": 7.12,
+              "coldMdbRssMB": 52.91,
+              "hotMdbMappings": 1,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 12.48,
+              "externalMB": 27.74,
+              "arrayBuffersMB": 25.76
+            },
+            {
+              "label": "mix",
+              "t": 28.18,
+              "rssMB": 174.19,
+              "rssAnonMB": 65.23,
+              "rssFileMB": 48.59,
+              "rssShmemMB": 60.36,
+              "swapMB": 0,
+              "hwmMB": 175.13,
+              "pssAnonMB": 65.23,
+              "pssFileMB": 11.57,
+              "pssShmemMB": 60.36,
+              "anonymousMB": 65.23,
+              "hotMdbRssMB": 7.44,
+              "coldMdbRssMB": 52.91,
+              "hotMdbMappings": 1,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 10.22,
+              "externalMB": 20.61,
+              "arrayBuffersMB": 18.64
+            },
+            {
+              "label": "mix",
+              "t": 29.17,
+              "rssMB": 174.26,
+              "rssAnonMB": 65.24,
+              "rssFileMB": 48.59,
+              "rssShmemMB": 60.43,
+              "swapMB": 0,
+              "hwmMB": 175.13,
+              "pssAnonMB": 65.24,
+              "pssFileMB": 11.57,
+              "pssShmemMB": 60.43,
+              "anonymousMB": 65.24,
+              "hotMdbRssMB": 7.5,
+              "coldMdbRssMB": 52.91,
+              "hotMdbMappings": 1,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 11.93,
+              "externalMB": 26.84,
+              "arrayBuffersMB": 24.87
+            },
+            {
+              "label": "end+gc",
+              "t": 30.19,
+              "rssMB": 174.33,
+              "rssAnonMB": 65.31,
+              "rssFileMB": 48.59,
+              "rssShmemMB": 60.43,
+              "swapMB": 0,
+              "hwmMB": 175.13,
+              "pssAnonMB": 65.76,
+              "pssFileMB": 11.57,
+              "pssShmemMB": 60.43,
+              "anonymousMB": 65.76,
+              "hotMdbRssMB": 7.5,
+              "coldMdbRssMB": 52.91,
+              "hotMdbMappings": 1,
+              "coldMdbMappings": 1,
+              "heapUsedMB": 9.12,
+              "externalMB": 32.15,
+              "arrayBuffersMB": 16.18
+            }
+          ]
+        },
+        "checks": [
+          {
+            "name": "RSS peak (Node + TanoDB only) <= 270 MB",
+            "value": 174.33,
+            "unit": "MB",
+            "op": "<=",
+            "limit": 270,
+            "scale": null,
+            "projected": null,
+            "localPass": true,
+            "pass": true
+          },
+          {
+            "name": "anonymous peak <= 200 MB",
+            "value": 67.13,
+            "unit": "MB",
+            "op": "<=",
+            "limit": 200,
+            "scale": null,
+            "projected": null,
+            "localPass": true,
+            "pass": true
+          },
+          {
+            "name": "VmSwap == 0",
+            "value": 0,
+            "unit": "MB",
+            "op": "<=",
+            "limit": 0,
+            "scale": null,
+            "projected": null,
+            "localPass": true,
+            "pass": true,
+            "note": "this dev box swaps to zram under its own load; a non-zero value here is host pressure, not TanoDB"
+          },
+          {
+            "name": "RSS slope, second half of mix",
+            "value": 23.319,
+            "unit": "MB/min",
+            "op": "<=",
+            "limit": 0.5,
+            "scale": null,
+            "projected": null,
+            "localPass": false,
+            "pass": null,
+            "informational": true,
+            "note": "over 15 s: the mmap working set is still warming up; the gate needs --seconds 1800 (last 15 min)"
+          },
+          {
+            "name": "anonymous end (after gc) <= 88 MB (§6.4 Node floor 42 + TanoDB JS 10 + lmdb native 14 + GC 22)",
+            "value": 65.31,
+            "unit": "MB",
+            "op": "<=",
+            "limit": 88,
+            "scale": null,
+            "projected": null,
+            "localPass": true,
+            "pass": true
+          },
+          {
+            "name": "file-backed .mdb resident <= 53 MB (§6.3 hot 35 + cold 18)",
+            "value": 60.41,
+            "unit": "MB",
+            "op": "<=",
+            "limit": 53,
+            "scale": null,
+            "projected": null,
+            "localPass": false,
+            "pass": false,
+            "note": "scale 0.03: branch pages are ~0.03x of full size, active set is full size"
+          },
+          {
+            "name": "hot.mdb resident <= 35 MB",
+            "value": 7.5,
+            "unit": "MB",
+            "op": "<=",
+            "limit": 35,
+            "scale": null,
+            "projected": null,
+            "localPass": true,
+            "pass": null,
+            "informational": true
+          },
+          {
+            "name": "cold.mdb resident <= 18 MB",
+            "value": 52.91,
+            "unit": "MB",
+            "op": "<=",
+            "limit": 18,
+            "scale": null,
+            "projected": null,
+            "localPass": false,
+            "pass": null,
+            "informational": true
+          },
+          {
+            "name": "mix errors",
+            "value": 0,
+            "unit": "",
+            "op": "==",
+            "limit": 0,
+            "scale": null,
+            "projected": null,
+            "localPass": true,
+            "pass": true
+          }
+        ],
+        "notes": [
+          "tmpfs: .mdb mappings count as RssShmem, added to file-backed here",
+          "process RSS excludes discord.js (40 MB), Express/SSR (16 MB), feature logic (24 MB) and the 24 MB CacheBudget of §6.4: this is the TanoDB slice only",
+          "working-set residency (>= 95 %) is trivially 100 % here: the box has free RAM; it is only meaningful under memory pressure (bench 12, needs a cgroup)"
+        ],
+        "pass": false,
+        "finishedAt": "2026-10-14T08:35:58.990Z"
+      }
+    },
+    {
+      "label": "04-crash-safety",
+      "file": "04-crash-safety.mjs",
+      "argv": [
+        "--iterations",
+        "100"
+      ],
+      "exit": 0,
+      "seconds": 51.9,
+      "result": {
+        "bench": "04-crash-safety",
+        "startedAt": "2026-10-14T08:35:59.132Z",
+        "host": {
+          "cpu": "AMD Ryzen 5 7535HS with Radeon Graphics",
+          "cores": 12,
+          "memMB": 15277,
+          "node": "v22.23.1",
+          "lmdb": "3.5.6",
+          "kernel": "7.1.5-201.fc44.x86_64",
+          "swap": "/dev/zram0",
+          "loadavg": [
+            0.63,
+            1.09,
+            1.26
+          ]
+        },
+        "args": {
+          "iterations": 100,
+          "maxDelayMs": 400,
+          "seed": 1,
+          "keys": 3000,
+          "dir": "$TMPDIR/bench-data/04-crash"
+        },
+        "calibration": {
+          "applied": true,
+          "factors": {
+            "cpu": 2.4,
+            "memcpy": 2.613,
+            "seqWrite": null,
+            "randWrite": null,
+            "fsync": null,
+            "targetSeqWriteMBps": 22.5,
+            "targetFsyncMs": 2
+          }
+        },
+        "results": {
+          "fs": {
+            "dir": "$TMPDIR/bench-data/04-crash",
+            "type": "tmpfs",
+            "source": "tmpfs[/.flatpak/com.visualstudio.code/tmp]",
+            "compress": null,
+            "realDisk": false
+          },
+          "iterations": [
+            {
+              "it": 0,
+              "early": false,
+              "delayMs": 126,
+              "startedAt": 1,
+              "reported": 226,
+              "visible": 226,
+              "txnsThisIter": 226,
+              "openMs": 10.13,
+              "ok": true
+            },
+            {
+              "it": 1,
+              "early": false,
+              "delayMs": 356,
+              "startedAt": 227,
+              "reported": 923,
+              "visible": 923,
+              "txnsThisIter": 697,
+              "openMs": 1.89,
+              "ok": true
+            },
+            {
+              "it": 2,
+              "early": false,
+              "delayMs": 275,
+              "startedAt": 924,
+              "reported": 1451,
+              "visible": 1451,
+              "txnsThisIter": 528,
+              "openMs": 2.53,
+              "ok": true
+            },
+            {
+              "it": 3,
+              "early": true,
+              "delayMs": 41,
+              "startedAt": null,
+              "reported": 0,
+              "visible": 1451,
+              "txnsThisIter": 0,
+              "openMs": 2.06,
+              "ok": true
+            },
+            {
+              "it": 4,
+              "early": false,
+              "delayMs": 201,
+              "startedAt": 1452,
+              "reported": 1801,
+              "visible": 1801,
+              "txnsThisIter": 350,
+              "openMs": 2.64,
+              "ok": true
+            }
+          ],
+          "summary": {
+            "seconds": 33.8,
+            "iterations": 100,
+            "earlyKills": 8,
+            "totalTxnsCommitted": 29543,
+            "corruptIterations": 0,
+            "maxLostCommittedTxns": 0,
+            "maxTxnsVisibleBeyondLastReport": 0,
+            "openMs": {
+              "n": 100,
+              "mean": 1.79,
+              "p50": 1.68,
+              "p90": 1.93,
+              "p99": 10.13,
+              "p999": 10.13,
+              "max": 10.13
+            },
+            "slowOpens": [],
+            "killDelayMs": {
+              "n": 100,
+              "mean": 174,
+              "p50": 149,
+              "p90": 353,
+              "p99": 392,
+              "p999": 392,
+              "max": 392
+            },
+            "finalRecords": 2610,
+            "finalCounters": 800,
+            "fileBytes": 3268608
+          },
+          "negativeControl": {
+            "droppedIndexEntryDetected": true,
+            "reindexRepaired": true,
+            "staleIndexAfterRawDataWriteDetected": true,
+            "problemsSeen": [
+              "rec_by_v: 1 entries missing, 0 dangling",
+              "rec 2540 differs: db={\"i\":2540,\"live\":true,\"pad\":\"dddddddddddddddddddddddddddddddddddddddddddddddddddddd29320\",\"t\":29320,\"tag\":\"kk3\",\"v\":420} model={\"i\":2540,\"live\":true,\"pad\":\"kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk28644\",\"t\":28644,\"tag\":\"k1yk\",\"",
+              "rec_by_v: 1 entries missing, 1 dangling"
+            ]
+          },
+          "dropUnderKill": {
+            "kills": 60,
+            "inconsistentBuckets": 0,
+            "examples": []
+          }
+        },
+        "checks": [
+          {
+            "name": "dropCollection under kill -9: buckets left with index != data (60 kills)",
+            "value": 0,
+            "unit": "",
+            "op": "==",
+            "limit": 0,
+            "scale": null,
+            "projected": null,
+            "localPass": true,
+            "pass": true,
+            "note": "src/collection.js drop() drops each index DBI, the data DBI and the meta key in SEPARATE commits (backend.drop refuses to run inside a txn)"
+          },
+          {
+            "name": "verifier negative control (detects injected corruption, reindex repairs)",
+            "value": 1,
+            "unit": "bool",
+            "op": "==",
+            "limit": 1,
+            "scale": null,
+            "projected": null,
+            "localPass": true,
+            "pass": true
+          },
+          {
+            "name": "corrupt iterations (open / prefix / index<->data)",
+            "value": 0,
+            "unit": "",
+            "op": "==",
+            "limit": 0,
+            "scale": null,
+            "projected": null,
+            "localPass": true,
+            "pass": true
+          },
+          {
+            "name": "committed txns lost after kill -9 (max)",
+            "value": 0,
+            "unit": "txns",
+            "op": "<=",
+            "limit": 0,
+            "scale": null,
+            "projected": null,
+            "localPass": true,
+            "pass": true,
+            "note": "design allows <= 1 for POWER loss; for kill -9 nothing reported committed may vanish"
+          },
+          {
+            "name": "child processes that died on their own",
+            "value": 0,
+            "unit": "",
+            "op": "==",
+            "limit": 0,
+            "scale": null,
+            "projected": null,
+            "localPass": true,
+            "pass": true
+          },
+          {
+            "name": "open time after crash p99",
+            "value": 10.13,
+            "unit": "ms",
+            "op": "<=",
+            "limit": 50,
+            "scale": "cpu",
+            "projected": 24.312,
+            "localPass": true,
+            "pass": true
+          }
+        ],
+        "notes": [
+          "maxTxnsVisibleBeyondLastReport: txns committed after the last stdout report (killed between commit and report) - expected 0 or 1",
+          "power-loss (dm-flakey) run not possible here: needs root + device-mapper"
+        ],
+        "pass": true,
+        "finishedAt": "2026-10-14T08:36:50.884Z"
+      }
+    },
+    {
+      "label": "08-compaction",
+      "file": "08-compaction.mjs",
+      "argv": [
+        "--scale",
+        "0.03"
+      ],
+      "exit": 0,
+      "seconds": 3.2,
+      "result": {
+        "bench": "08-compaction",
+        "startedAt": "2026-10-14T08:36:51.026Z",
+        "host": {
+          "cpu": "AMD Ryzen 5 7535HS with Radeon Graphics",
+          "cores": 12,
+          "memMB": 15277,
+          "node": "v22.23.1",
+          "lmdb": "3.5.6",
+          "kernel": "7.1.5-201.fc44.x86_64",
+          "swap": "/dev/zram0",
+          "loadavg": [
+            1.02,
+            1.12,
+            1.27
+          ]
+        },
+        "args": {
+          "scale": 0.03,
+          "bucketRows": 150000,
+          "hotTargetMB": 12.6,
+          "dir": "$TMPDIR/bench-data/08-compaction"
+        },
+        "calibration": {
+          "applied": true,
+          "factors": {
+            "cpu": 2.4,
+            "memcpy": 2.613,
+            "seqWrite": null,
+            "randWrite": null,
+            "fsync": null,
+            "targetSeqWriteMBps": 22.5,
+            "targetFsyncMs": 2
+          }
+        },
+        "results": {
+          "fs": {
+            "dir": "$TMPDIR/bench-data/08-compaction",
+            "type": "tmpfs",
+            "source": "tmpfs[/.flatpak/com.visualstudio.code/tmp]",
+            "compress": null,
+            "realDisk": false
+          },
+          "drop": {
+            "buildSeconds": 1.5,
+            "fileBytes": 119758848,
+            "pageCacheEvicted": {
+              "before": 119758848,
+              "after": 119758848
+            },
+            "dropMs": 1.94,
+            "refillRows": 150000,
+            "fileGrowthOnRefillBytes": 0,
+            "droppedRows": 150000,
+            "droppedPages": 5832,
+            "freePagesBefore": 2967,
+            "freePagesAfterDrop": 8793,
+            "rss": {
+              "beforeMB": 71.66,
+              "afterMB": 74.18,
+              "peakMB": 74.18,
+              "peakDeltaMB": 2.52,
+              "anonDeltaMB": 0.06,
+              "fileDeltaMB": 0
+            }
+          },
+          "copyCompaction": {
+            "api": "env.backup(path, compact=true) via db.backend(\"hot\").env - no TanoDB-level API",
+            "fileBytesBefore": 17367040,
+            "pageCacheEvicted": {
+              "before": 17367040,
+              "after": 17367040
+            },
+            "copyMs": 4.8,
+            "swapCloseRenameReopenMs": 6.156526999999983,
+            "countsMatchAfterSwap": true,
+            "fileBytesAfter": 6647808,
+            "freePagesBefore": 2612,
+            "freeShareBefore": 0.616,
+            "rss": {
+              "beforeMB": 71.86,
+              "peakMB": 89.57,
+              "peakDeltaMB": 17.71,
+              "anonDeltaMB": 0.05,
+              "fileDeltaMB": 0.13
+            },
+            "shrink": 0.617,
+            "copyMBps": 3443.9
+          }
+        },
+        "checks": [
+          {
+            "name": "dropCollection of a 150000-row month bucket (cold cache)",
+            "value": 0.00194226,
+            "unit": "s",
+            "op": "<=",
+            "limit": 2,
+            "scale": null,
+            "projected": 0.15538,
+            "localPass": true,
+            "pass": true,
+            "note": "projection: x33 rows (linear) x cpu factor; threshold is for 5M rows"
+          },
+          {
+            "name": "RSS spike during drop",
+            "value": 2.52,
+            "unit": "MB",
+            "op": "<=",
+            "limit": 40,
+            "scale": null,
+            "projected": 0.06,
+            "localPass": true,
+            "pass": true,
+            "note": "projection: file-backed part x 1/scale (pages read by the drop + readahead grow with the tree)"
+          },
+          {
+            "name": "next month reuses the dropped pages (file growth on refill)",
+            "value": 0,
+            "unit": "MB",
+            "op": "<=",
+            "limit": 1,
+            "scale": null,
+            "projected": null,
+            "localPass": true,
+            "pass": null,
+            "informational": true
+          },
+          {
+            "name": "copy-compaction of the 420 MB hot env",
+            "value": 0.121954,
+            "unit": "s",
+            "op": "<=",
+            "limit": 30,
+            "scale": null,
+            "projected": 18.6667,
+            "localPass": true,
+            "pass": true,
+            "note": "local value scaled to 420 MB; projection = 420 MB / target seq write MB/s (writes only: a lower bound, reads share the volume limit)"
+          },
+          {
+            "name": "RSS spike during copy-compaction",
+            "value": 17.71,
+            "unit": "MB",
+            "op": "<=",
+            "limit": 40,
+            "scale": null,
+            "projected": 3.3466,
+            "localPass": true,
+            "pass": true,
+            "note": "measured at 16.56 MB; projection: file-backed part x 420 MB / size - the compacting copy reads every live page through this process's mmap (clean, reclaimable, but it IS RSS). Running it in a short-lived child process keeps it out of the bot's RSS."
+          },
+          {
+            "name": "compacted env reopens with identical counts",
+            "value": 1,
+            "unit": "bool",
+            "op": "==",
+            "limit": 1,
+            "scale": null,
+            "projected": null,
+            "localPass": true,
+            "pass": true
+          }
+        ],
+        "notes": [],
+        "pass": true,
+        "finishedAt": "2026-10-14T08:36:54.088Z"
+      }
+    },
+    {
+      "label": "09-multiprocess",
+      "file": "09-multiprocess.mjs",
+      "argv": [
+        "--incr-ops",
+        "4000"
+      ],
+      "exit": 0,
+      "seconds": 9.9,
+      "result": {
+        "bench": "09-multiprocess",
+        "startedAt": "2026-10-14T08:36:54.235Z",
+        "host": {
+          "cpu": "AMD Ryzen 5 7535HS with Radeon Graphics",
+          "cores": 12,
+          "memMB": 15277,
+          "node": "v22.23.1",
+          "lmdb": "3.5.6",
+          "kernel": "7.1.5-201.fc44.x86_64",
+          "swap": "/dev/zram0",
+          "loadavg": [
+            1.02,
+            1.12,
+            1.26
+          ]
+        },
+        "args": {
+          "ticks": 300,
+          "incrOps": 4000,
+          "controlOps": 2000,
+          "dir": "$TMPDIR/bench-data/09-multiproc"
+        },
+        "calibration": {
+          "applied": true,
+          "factors": {
+            "cpu": 2.4,
+            "memcpy": 2.613,
+            "seqWrite": null,
+            "randWrite": null,
+            "fsync": null,
+            "targetSeqWriteMBps": 22.5,
+            "targetFsyncMs": 2
+          }
+        },
+        "results": {
+          "fs": {
+            "dir": "$TMPDIR/bench-data/09-multiproc",
+            "type": "tmpfs",
+            "source": "tmpfs[/.flatpak/com.visualstudio.code/tmp]",
+            "compress": null,
+            "realDisk": false
+          },
+          "visibility": {
+            "ticks": 300,
+            "observed": 300,
+            "coalesced": 0,
+            "latencyMs": {
+              "n": 300,
+              "mean": 0.63,
+              "p50": 0.618,
+              "p90": 1.049,
+              "p99": 2.092,
+              "p999": 2.325,
+              "max": 2.325
+            },
+            "staleSnapshot": {
+              "before": "null",
+              "duringSpinWithoutYield": "null",
+              "afterResetReadTxn": "42"
+            }
+          },
+          "incr": {
+            "atomic": {
+              "ops": 4000,
+              "final": 4000,
+              "lost": 0,
+              "seconds": 0.06,
+              "opsPerSec": 65042
+            },
+            "nonAtomicControl": {
+              "ops": 2000,
+              "final": 1000,
+              "lost": 1000,
+              "seconds": 2.05,
+              "opsPerSec": 978
+            }
+          },
+          "writerKill": {
+            "readerReads": 410,
+            "readerMaxGapMs": 1.517,
+            "newWriterLockMs": 0.725,
+            "killToWriteMs": 6.7,
+            "killedTxnVisible": false,
+            "staleReadersClearedByReaderCheck": 0
+          }
+        },
+        "checks": [
+          {
+            "name": "cross-process visibility p99 (writer commit -> reader sees)",
+            "value": 2.092,
+            "unit": "ms",
+            "op": "<=",
+            "limit": 600,
+            "scale": null,
+            "projected": null,
+            "localPass": true,
+            "pass": true
+          },
+          {
+            "name": "cross-process visibility max",
+            "value": 2.325,
+            "unit": "ms",
+            "op": "<=",
+            "limit": 600,
+            "scale": null,
+            "projected": null,
+            "localPass": true,
+            "pass": true
+          },
+          {
+            "name": "non-yielding reader stays on its snapshot until resetReadTxn()",
+            "value": 1,
+            "unit": "bool",
+            "op": "==",
+            "limit": 1,
+            "scale": null,
+            "projected": null,
+            "localPass": true,
+            "pass": null,
+            "informational": true,
+            "note": "§11.3 rule 4 - expected behaviour, documents the need for resetReadTxn/__epoch"
+          },
+          {
+            "name": "lost increments, 2 processes x 2000 incr",
+            "value": 0,
+            "unit": "ops",
+            "op": "==",
+            "limit": 0,
+            "scale": null,
+            "projected": null,
+            "localPass": true,
+            "pass": true
+          },
+          {
+            "name": "control (non-atomic get+put) does lose updates - test is sensitive",
+            "value": 1,
+            "unit": "bool",
+            "op": "==",
+            "limit": 1,
+            "scale": null,
+            "projected": null,
+            "localPass": true,
+            "pass": true
+          },
+          {
+            "name": "reader + new writer not hung after writer kill -9 (robust mutex)",
+            "value": 1,
+            "unit": "bool",
+            "op": "==",
+            "limit": 1,
+            "scale": null,
+            "projected": null,
+            "localPass": true,
+            "pass": true
+          },
+          {
+            "name": "killed txn writes invisible",
+            "value": 1,
+            "unit": "bool",
+            "op": "==",
+            "limit": 1,
+            "scale": null,
+            "projected": null,
+            "localPass": true,
+            "pass": true
+          },
+          {
+            "name": "max read stall while lock held / after kill",
+            "value": 1.517,
+            "unit": "ms",
+            "op": "<=",
+            "limit": 50,
+            "scale": null,
+            "projected": null,
+            "localPass": true,
+            "pass": null,
+            "informational": true,
+            "note": "includes the 1 ms poll sleep"
+          }
+        ],
+        "notes": [
+          "lease takeover (§11.3 rule 3, threshold <= 20 s) not measured: no lease implementation in src/"
+        ],
+        "pass": true,
+        "finishedAt": "2026-10-14T08:37:04.006Z"
+      }
+    }
+  ],
+  "finishedAt": "2026-10-14T08:37:04.013Z"
+}

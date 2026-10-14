@@ -1,0 +1,69 @@
+{
+  "name": "spbt-db",
+  "version": "0.1.0",
+  "description": "A small embedded database for Node.js on small VPSes: typed binary keys, secondary indexes, TTL, a durable scheduler, write coalescers, time buckets, int8 vectors and blobs on top of LMDB. Built for the TANO Discord bot.",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./keys": "./src/keys.js",
+    "./frame": "./src/frame.js",
+    "./schema": "./src/schema.js",
+    "./collection": "./src/collection.js",
+    "./backend": "./src/backend.js",
+    "./backend-memory": "./src/backend-memory.js",
+    "./backend-lmdb": "./src/backend-lmdb.js",
+    "./sched": "./src/sched.js",
+    "./ttl": "./src/ttl.js",
+    "./coalesce": "./src/coalesce.js",
+    "./buckets": "./src/buckets.js",
+    "./boot": "./src/boot.js",
+    "./vector": "./src/vector.js",
+    "./blobs": "./src/blobs.js",
+    "./ai-schema": "./src/ai-schema.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src/",
+    "README.md",
+    "README.uk.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "bench": "node bench/quick.mjs",
+    "bench:suite": "node bench/run.mjs --scale 0.1",
+    "bench:json": "node bench/json-vs-spbtdb.mjs",
+    "bench:size": "node bench/size-facts.mjs"
+  },
+  "dependencies": {
+    "lmdb": "3.5.6",
+    "msgpackr": "1.12.1"
+  },
+  "keywords": [
+    "database",
+    "embedded-database",
+    "lmdb",
+    "key-value",
+    "secondary-index",
+    "ttl",
+    "scheduler",
+    "vector-search",
+    "discord-bot",
+    "small-vps"
+  ],
+  "author": "DanyloKob",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DanyloKob/SPBT_DB.git"
+  },
+  "homepage": "https://github.com/DanyloKob/SPBT_DB#readme",
+  "bugs": {
+    "url": "https://github.com/DanyloKob/SPBT_DB/issues"
+  }
+}

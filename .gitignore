@@ -1,0 +1,10 @@
+node_modules
+.bench-data/
+.bench-prof/
+.tmp-probe/
+*.mdb
+*.mdb-lock
+*.tgz
+npm-debug.log*
+.env
+.env.*
