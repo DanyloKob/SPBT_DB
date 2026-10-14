@@ -1,0 +1,1143 @@
+{
+  "date": "2026-10-14",
+  "machine": {
+    "cpu": "AMD Ryzen 5 7535HS with Radeon Graphics",
+    "cores": 12,
+    "ramMB": 15277,
+    "node": "v22.23.1",
+    "lmdb": "3.5.6",
+    "kernel": "7.1.5-201.fc44.x86_64",
+    "fs": "btrfs (relatime,compress=zstd:1,ssd,discard=async) on /dev/nvme0n1p3"
+  },
+  "sizes": [
+    1000,
+    10000,
+    100000
+  ],
+  "seconds": 2,
+  "suites": [
+    {
+      "store": "json",
+      "n": 1000,
+      "scenarios": {
+        "user.get": {
+          "ops": 5256,
+          "warmOps": 200,
+          "opsPerSec": 2627.5,
+          "p50us": 366.85,
+          "p99us": 592.2,
+          "meanUs": 380.02,
+          "maxUs": 834.1
+        },
+        "user.set": {
+          "ops": 1667,
+          "warmOps": 193,
+          "opsPerSec": 833.3,
+          "p50us": 1163.63,
+          "p99us": 1793.71,
+          "meanUs": 1199.05,
+          "maxUs": 5735.1,
+          "bytesPerOp": 100243,
+          "durable": false
+        },
+        "message.xp": {
+          "ops": 106720,
+          "warmOps": 200,
+          "opsPerSec": 53359.9,
+          "p50us": 17.85,
+          "p99us": 30.87,
+          "meanUs": 18.45,
+          "maxUs": 297.7
+        },
+        "xp.flush": {
+          "intervalS": 120,
+          "updatesPerFlush": 6000,
+          "flushMainThreadMs": 0.82,
+          "bytesPerFlush": 75585,
+          "bytesPerUpdate": 12.6,
+          "durable": false
+        },
+        "config.read": {
+          "ops": 65287,
+          "warmOps": 200,
+          "opsPerSec": 32643.3,
+          "p50us": 29.1,
+          "p99us": 51.54,
+          "meanUs": 30.11,
+          "maxUs": 2021.5
+        },
+        "audit.append": {
+          "ops": 5997,
+          "warmOps": 200,
+          "opsPerSec": 2998.1,
+          "p50us": 321.53,
+          "p99us": 528.04,
+          "meanUs": 332.9,
+          "maxUs": 769.9,
+          "bytesPerOp": 30477,
+          "durable": false
+        },
+        "audit.view": {
+          "ops": 20120,
+          "warmOps": 200,
+          "opsPerSec": 10059.9,
+          "p50us": 95.54,
+          "p99us": 177.75,
+          "meanUs": 98.78,
+          "maxUs": 634.2
+        },
+        "top10": {
+          "ops": 7892,
+          "warmOps": 200,
+          "opsPerSec": 3945.7,
+          "p50us": 247.89,
+          "p99us": 437.76,
+          "meanUs": 253,
+          "maxUs": 767.3
+        }
+      },
+      "setupMs": 115,
+      "files": {
+        "usersJsonBytes": 80002,
+        "levelsDataBytes": 75471,
+        "moderationJsonBytes": 4655,
+        "activityLogBytes": 30590,
+        "generalJsonBytes": 729,
+        "levelsJsonBytes": 634
+      },
+      "rssLoaded": {
+        "rssMB": 66,
+        "anonMB": 17.6,
+        "fileMB": 48.4,
+        "shmemMB": 0,
+        "hwmMB": 66
+      },
+      "rss": {
+        "rssMB": 100.2,
+        "anonMB": 51.5,
+        "fileMB": 48.7,
+        "shmemMB": 0,
+        "hwmMB": 101.3
+      },
+      "guildsInRam": 1,
+      "totalMs": 14921,
+      "rssWorking": {
+        "store": "json",
+        "n": 1000,
+        "bare": {
+          "rssMB": 53.8,
+          "anonMB": 13.6,
+          "fileMB": 40.2,
+          "shmemMB": 0,
+          "hwmMB": 53.8
+        },
+        "rss": {
+          "rssMB": 64,
+          "anonMB": 16.9,
+          "fileMB": 47.2,
+          "shmemMB": 0,
+          "hwmMB": 64.3
+        },
+        "guildsInRam": 1
+      }
+    },
+    {
+      "store": "spbt",
+      "n": 1000,
+      "scenarios": {
+        "user.get": {
+          "ops": 1000000,
+          "warmOps": 200,
+          "opsPerSec": 1297643.2,
+          "p50us": 0.64,
+          "p99us": 1.29,
+          "meanUs": 0.67,
+          "maxUs": 248.7
+        },
+        "user.set": {
+          "ops": 669,
+          "warmOps": 67,
+          "opsPerSec": 334.2,
+          "p50us": 2925.37,
+          "p99us": 3783.88,
+          "meanUs": 2991.23,
+          "maxUs": 8570.2,
+          "bytesPerOp": 32974,
+          "durable": true
+        },
+        "user.set.batch100": {
+          "txns": 439,
+          "opsPerSec": 21930,
+          "txnP50us": 4506.76,
+          "txnP99us": 5339.87,
+          "bytesPerOp": 1436,
+          "durable": true
+        },
+        "message.xp": {
+          "ops": 563077,
+          "warmOps": 200,
+          "opsPerSec": 281538.4,
+          "p50us": 3.25,
+          "p99us": 6.98,
+          "meanUs": 3.4,
+          "maxUs": 2614.4
+        },
+        "xp.flush": {
+          "intervalS": 30,
+          "updatesPerFlush": 1500,
+          "flushMainThreadMs": 3.9,
+          "flushWallMs": 7.53,
+          "bytesPerFlush": 110888,
+          "bytesPerUpdate": 73.9,
+          "durable": true
+        },
+        "xp.flush.2min": {
+          "intervalS": 120,
+          "updatesPerFlush": 6000,
+          "flushMainThreadMs": 4.15,
+          "flushWallMs": 7.71,
+          "bytesPerFlush": 110888,
+          "bytesPerUpdate": 18.5,
+          "durable": true
+        },
+        "config.read": {
+          "ops": 137901,
+          "warmOps": 200,
+          "opsPerSec": 68950.2,
+          "p50us": 12.5,
+          "p99us": 28.83,
+          "meanUs": 13.58,
+          "maxUs": 965.1
+        },
+        "audit.append": {
+          "ops": 645,
+          "warmOps": 65,
+          "opsPerSec": 322.4,
+          "p50us": 3030.81,
+          "p99us": 4147.92,
+          "meanUs": 3100.96,
+          "maxUs": 8658.9,
+          "bytesPerOp": 33358,
+          "durable": true
+        },
+        "audit.append.coalesced": {
+          "ops": 138040,
+          "warmOps": 200,
+          "opsPerSec": 68966.8,
+          "p50us": 0.48,
+          "p99us": 2.86,
+          "meanUs": 13.07,
+          "maxUs": 17547,
+          "dropped": 0,
+          "bytesPerOp": 997,
+          "durable": "after the 5 s flush"
+        },
+        "audit.view": {
+          "ops": 53002,
+          "warmOps": 200,
+          "opsPerSec": 26500.9,
+          "p50us": 34.3,
+          "p99us": 68.81,
+          "meanUs": 37.14,
+          "maxUs": 1080.1
+        },
+        "top10": {
+          "ops": 275305,
+          "warmOps": 200,
+          "opsPerSec": 137652.3,
+          "p50us": 6.32,
+          "p99us": 11.82,
+          "meanUs": 6.63,
+          "maxUs": 107.8
+        }
+      },
+      "setupMs": 252,
+      "files": {
+        "hotMdbBytes": 856064,
+        "coldMdbBytes": 344064
+      },
+      "rssLoaded": {
+        "rssMB": 82.3,
+        "anonMB": 33.4,
+        "fileMB": 48.9,
+        "shmemMB": 0,
+        "hwmMB": 83.6
+      },
+      "dbStats": {
+        "hot": {
+          "entries": 15004,
+          "pages": 312,
+          "freePages": 81,
+          "fileBytes": 1277952,
+          "pageSize": 4096,
+          "mapSize": 2147483648,
+          "collections": {
+            "guild": {
+              "entries": 0,
+              "pages": 0,
+              "freePages": 81
+            },
+            "guild_feature": {
+              "entries": 4500,
+              "pages": 33,
+              "freePages": 81
+            },
+            "feature_enabled": {
+              "entries": 4500,
+              "pages": 54,
+              "freePages": 81
+            },
+            "feature_config": {
+              "entries": 1000,
+              "pages": 73,
+              "freePages": 81
+            },
+            "user": {
+              "entries": 1000,
+              "pages": 16,
+              "freePages": 81
+            },
+            "user_by_plan": {
+              "entries": 1000,
+              "pages": 8,
+              "freePages": 81
+            },
+            "user_by_expiry": {
+              "entries": 1000,
+              "pages": 16,
+              "freePages": 81
+            },
+            "news": {
+              "entries": 0,
+              "pages": 0,
+              "freePages": 81
+            },
+            "level": {
+              "entries": 1000,
+              "pages": 9,
+              "freePages": 81
+            },
+            "level_by_xp": {
+              "entries": 1000,
+              "pages": 16,
+              "freePages": 81
+            },
+            "kv": {
+              "entries": 1,
+              "pages": 1,
+              "freePages": 81
+            }
+          }
+        },
+        "cold": {
+          "entries": 143952,
+          "pages": 1707,
+          "freePages": 122,
+          "fileBytes": 13983744,
+          "pageSize": 8192,
+          "mapSize": 8589934592,
+          "collections": {
+            "audit_202610": {
+              "entries": 143950,
+              "pages": 1579,
+              "freePages": 122
+            }
+          }
+        }
+      },
+      "rss": {
+        "rssMB": 195.6,
+        "anonMB": 132.2,
+        "fileMB": 63.4,
+        "shmemMB": 0,
+        "hwmMB": 203
+      },
+      "totalMs": 17928,
+      "rssWorking": {
+        "store": "spbt",
+        "n": 1000,
+        "bare": {
+          "rssMB": 53.7,
+          "anonMB": 13.5,
+          "fileMB": 40.2,
+          "shmemMB": 0,
+          "hwmMB": 53.7
+        },
+        "rss": {
+          "rssMB": 86.1,
+          "anonMB": 33.7,
+          "fileMB": 52.5,
+          "shmemMB": 0,
+          "hwmMB": 87
+        }
+      }
+    },
+    {
+      "store": "json",
+      "n": 10000,
+      "scenarios": {
+        "user.get": {
+          "ops": 477,
+          "warmOps": 46,
+          "opsPerSec": 238.1,
+          "p50us": 4126.57,
+          "p99us": 4508.02,
+          "meanUs": 4199.71,
+          "maxUs": 4986.4
+        },
+        "user.set": {
+          "ops": 196,
+          "warmOps": 19,
+          "opsPerSec": 98,
+          "p50us": 9857.41,
+          "p99us": 12911.61,
+          "meanUs": 10202.24,
+          "maxUs": 13213.6,
+          "bytesPerOp": 803979,
+          "durable": false
+        },
+        "message.xp": {
+          "ops": 106856,
+          "warmOps": 200,
+          "opsPerSec": 53427.9,
+          "p50us": 18.1,
+          "p99us": 25.42,
+          "meanUs": 18.53,
+          "maxUs": 2340.5
+        },
+        "xp.flush": {
+          "intervalS": 120,
+          "updatesPerFlush": 6000,
+          "flushMainThreadMs": 5.68,
+          "bytesPerFlush": 754628,
+          "bytesPerUpdate": 125.8,
+          "durable": false
+        },
+        "config.read": {
+          "ops": 66375,
+          "warmOps": 200,
+          "opsPerSec": 33187.1,
+          "p50us": 29.29,
+          "p99us": 40.55,
+          "meanUs": 29.81,
+          "maxUs": 152.9
+        },
+        "audit.append": {
+          "ops": 6059,
+          "warmOps": 200,
+          "opsPerSec": 3029,
+          "p50us": 320.26,
+          "p99us": 522.67,
+          "meanUs": 329.46,
+          "maxUs": 1262.1,
+          "bytesPerOp": 30476,
+          "durable": false
+        },
+        "audit.view": {
+          "ops": 19542,
+          "warmOps": 200,
+          "opsPerSec": 9770.8,
+          "p50us": 99.97,
+          "p99us": 173.84,
+          "meanUs": 102.07,
+          "maxUs": 832
+        },
+        "top10": {
+          "ops": 483,
+          "warmOps": 48,
+          "opsPerSec": 241.4,
+          "p50us": 4025.82,
+          "p99us": 5442.06,
+          "meanUs": 4141.25,
+          "maxUs": 6766.1
+        }
+      },
+      "setupMs": 139,
+      "files": {
+        "usersJsonBytes": 800002,
+        "levelsDataBytes": 754460,
+        "moderationJsonBytes": 4655,
+        "activityLogBytes": 30594,
+        "generalJsonBytes": 729,
+        "levelsJsonBytes": 634
+      },
+      "rssLoaded": {
+        "rssMB": 74.9,
+        "anonMB": 26.6,
+        "fileMB": 48.3,
+        "shmemMB": 0,
+        "hwmMB": 75.5
+      },
+      "rss": {
+        "rssMB": 110.9,
+        "anonMB": 62.4,
+        "fileMB": 48.5,
+        "shmemMB": 0,
+        "hwmMB": 122.7
+      },
+      "guildsInRam": 1,
+      "totalMs": 15247,
+      "rssWorking": {
+        "store": "json",
+        "n": 10000,
+        "bare": {
+          "rssMB": 53.8,
+          "anonMB": 13.5,
+          "fileMB": 40.3,
+          "shmemMB": 0,
+          "hwmMB": 53.8
+        },
+        "rss": {
+          "rssMB": 70.7,
+          "anonMB": 23.4,
+          "fileMB": 47.3,
+          "shmemMB": 0,
+          "hwmMB": 74.6
+        },
+        "guildsInRam": 1
+      }
+    },
+    {
+      "store": "spbt",
+      "n": 10000,
+      "scenarios": {
+        "user.get": {
+          "ops": 1000000,
+          "warmOps": 200,
+          "opsPerSec": 1272958.9,
+          "p50us": 0.68,
+          "p99us": 1.07,
+          "meanUs": 0.7,
+          "maxUs": 152.3
+        },
+        "user.set": {
+          "ops": 636,
+          "warmOps": 61,
+          "opsPerSec": 317.8,
+          "p50us": 3102.31,
+          "p99us": 3905.68,
+          "meanUs": 3146.21,
+          "maxUs": 8349,
+          "bytesPerOp": 36205,
+          "durable": true
+        },
+        "user.set.batch100": {
+          "txns": 236,
+          "opsPerSec": 11780,
+          "txnP50us": 8347.66,
+          "txnP99us": 13345.41,
+          "bytesPerOp": 7009,
+          "durable": true
+        },
+        "message.xp": {
+          "ops": 555733,
+          "warmOps": 200,
+          "opsPerSec": 277866.2,
+          "p50us": 3.36,
+          "p99us": 7.15,
+          "meanUs": 3.47,
+          "maxUs": 367.6
+        },
+        "xp.flush": {
+          "intervalS": 30,
+          "updatesPerFlush": 1500,
+          "flushMainThreadMs": 6.19,
+          "flushWallMs": 15.17,
+          "bytesPerFlush": 778528,
+          "bytesPerUpdate": 519,
+          "durable": true
+        },
+        "xp.flush.2min": {
+          "intervalS": 120,
+          "updatesPerFlush": 6000,
+          "flushMainThreadMs": 20.18,
+          "flushWallMs": 28.48,
+          "bytesPerFlush": 778536,
+          "bytesPerUpdate": 129.8,
+          "durable": true
+        },
+        "config.read": {
+          "ops": 135001,
+          "warmOps": 200,
+          "opsPerSec": 67459.4,
+          "p50us": 12.56,
+          "p99us": 29.12,
+          "meanUs": 13.63,
+          "maxUs": 1225.3
+        },
+        "audit.append": {
+          "ops": 647,
+          "warmOps": 60,
+          "opsPerSec": 323.1,
+          "p50us": 3043.79,
+          "p99us": 3590.75,
+          "meanUs": 3094.06,
+          "maxUs": 8744.9,
+          "bytesPerOp": 33359,
+          "durable": true
+        },
+        "audit.append.coalesced": {
+          "ops": 134968,
+          "warmOps": 200,
+          "opsPerSec": 67391.5,
+          "p50us": 0.46,
+          "p99us": 1.17,
+          "meanUs": 13.39,
+          "maxUs": 18588.3,
+          "dropped": 0,
+          "bytesPerOp": 1006,
+          "durable": "after the 5 s flush"
+        },
+        "audit.view": {
+          "ops": 51073,
+          "warmOps": 200,
+          "opsPerSec": 25536.3,
+          "p50us": 35.84,
+          "p99us": 69.23,
+          "meanUs": 38.61,
+          "maxUs": 2489.9
+        },
+        "top10": {
+          "ops": 264359,
+          "warmOps": 200,
+          "opsPerSec": 132179.3,
+          "p50us": 6.63,
+          "p99us": 11.7,
+          "meanUs": 6.94,
+          "maxUs": 283
+        }
+      },
+      "setupMs": 373,
+      "files": {
+        "hotMdbBytes": 2699264,
+        "coldMdbBytes": 344064
+      },
+      "rssLoaded": {
+        "rssMB": 84.3,
+        "anonMB": 33.9,
+        "fileMB": 50.4,
+        "shmemMB": 0,
+        "hwmMB": 85.6
+      },
+      "dbStats": {
+        "hot": {
+          "entries": 59355,
+          "pages": 1115,
+          "freePages": 379,
+          "fileBytes": 4567040,
+          "pageSize": 4096,
+          "mapSize": 2147483648,
+          "collections": {
+            "guild": {
+              "entries": 0,
+              "pages": 0,
+              "freePages": 379
+            },
+            "guild_feature": {
+              "entries": 4500,
+              "pages": 33,
+              "freePages": 379
+            },
+            "feature_enabled": {
+              "entries": 4500,
+              "pages": 54,
+              "freePages": 379
+            },
+            "feature_config": {
+              "entries": 1000,
+              "pages": 73,
+              "freePages": 379
+            },
+            "user": {
+              "entries": 10000,
+              "pages": 150,
+              "freePages": 379
+            },
+            "user_by_plan": {
+              "entries": 10000,
+              "pages": 77,
+              "freePages": 379
+            },
+            "user_by_expiry": {
+              "entries": 9351,
+              "pages": 155,
+              "freePages": 379
+            },
+            "news": {
+              "entries": 0,
+              "pages": 0,
+              "freePages": 379
+            },
+            "level": {
+              "entries": 10000,
+              "pages": 76,
+              "freePages": 379
+            },
+            "level_by_xp": {
+              "entries": 10000,
+              "pages": 110,
+              "freePages": 379
+            },
+            "kv": {
+              "entries": 1,
+              "pages": 1,
+              "freePages": 379
+            }
+          }
+        },
+        "cold": {
+          "entries": 140877,
+          "pages": 1684,
+          "freePages": 124,
+          "fileBytes": 13795328,
+          "pageSize": 8192,
+          "mapSize": 8589934592,
+          "collections": {
+            "audit_202610": {
+              "entries": 140875,
+              "pages": 1554,
+              "freePages": 124
+            }
+          }
+        }
+      },
+      "rss": {
+        "rssMB": 202.4,
+        "anonMB": 136,
+        "fileMB": 66.3,
+        "shmemMB": 0,
+        "hwmMB": 202.4
+      },
+      "totalMs": 18212,
+      "rssWorking": {
+        "store": "spbt",
+        "n": 10000,
+        "bare": {
+          "rssMB": 53.6,
+          "anonMB": 13.5,
+          "fileMB": 40.1,
+          "shmemMB": 0,
+          "hwmMB": 53.6
+        },
+        "rss": {
+          "rssMB": 104.4,
+          "anonMB": 49.2,
+          "fileMB": 55.2,
+          "shmemMB": 0,
+          "hwmMB": 104.5
+        }
+      }
+    },
+    {
+      "store": "json",
+      "n": 100000,
+      "scenarios": {
+        "user.get": {
+          "ops": 40,
+          "warmOps": 5,
+          "opsPerSec": 19.8,
+          "p50us": 50051.58,
+          "p99us": 53556.12,
+          "meanUs": 50418.25,
+          "maxUs": 54038.7
+        },
+        "user.set": {
+          "ops": 17,
+          "warmOps": 2,
+          "opsPerSec": 8.4,
+          "p50us": 115550.62,
+          "p99us": 120370.84,
+          "meanUs": 119741.1,
+          "maxUs": 199840.7,
+          "bytesPerOp": 8000372,
+          "durable": false
+        },
+        "message.xp": {
+          "ops": 103022,
+          "warmOps": 200,
+          "opsPerSec": 51510.8,
+          "p50us": 18.62,
+          "p99us": 26.61,
+          "meanUs": 19.02,
+          "maxUs": 109
+        },
+        "xp.flush": {
+          "intervalS": 120,
+          "updatesPerFlush": 6000,
+          "flushMainThreadMs": 66.58,
+          "bytesPerFlush": 7544803,
+          "bytesPerUpdate": 1257.5,
+          "durable": false
+        },
+        "config.read": {
+          "ops": 66734,
+          "warmOps": 200,
+          "opsPerSec": 33366.9,
+          "p50us": 29.16,
+          "p99us": 36.35,
+          "meanUs": 29.62,
+          "maxUs": 137.3
+        },
+        "audit.append": {
+          "ops": 5777,
+          "warmOps": 200,
+          "opsPerSec": 2888.4,
+          "p50us": 321.34,
+          "p99us": 639.02,
+          "meanUs": 345.48,
+          "maxUs": 3493,
+          "bytesPerOp": 30480,
+          "durable": false
+        },
+        "audit.view": {
+          "ops": 19656,
+          "warmOps": 200,
+          "opsPerSec": 9827.7,
+          "p50us": 99.42,
+          "p99us": 120.59,
+          "meanUs": 101.45,
+          "maxUs": 2082.2
+        },
+        "top10": {
+          "ops": 30,
+          "warmOps": 3,
+          "opsPerSec": 14.6,
+          "p50us": 64538.6,
+          "p99us": 108775.31,
+          "meanUs": 68518.96,
+          "maxUs": 110728.3
+        }
+      },
+      "setupMs": 394,
+      "files": {
+        "usersJsonBytes": 8000002,
+        "levelsDataBytes": 7544615,
+        "moderationJsonBytes": 4655,
+        "activityLogBytes": 30593,
+        "generalJsonBytes": 729,
+        "levelsJsonBytes": 634
+      },
+      "rssLoaded": {
+        "rssMB": 122.5,
+        "anonMB": 74.2,
+        "fileMB": 48.3,
+        "shmemMB": 0,
+        "hwmMB": 140.4
+      },
+      "rss": {
+        "rssMB": 226.1,
+        "anonMB": 177.5,
+        "fileMB": 48.6,
+        "shmemMB": 0,
+        "hwmMB": 314.9
+      },
+      "guildsInRam": 1,
+      "totalMs": 16023,
+      "rssWorking": {
+        "store": "json",
+        "n": 100000,
+        "bare": {
+          "rssMB": 53.7,
+          "anonMB": 13.5,
+          "fileMB": 40.2,
+          "shmemMB": 0,
+          "hwmMB": 53.7
+        },
+        "rss": {
+          "rssMB": 128.9,
+          "anonMB": 81.8,
+          "fileMB": 47.2,
+          "shmemMB": 0,
+          "hwmMB": 150.8
+        },
+        "guildsInRam": 1
+      }
+    },
+    {
+      "store": "spbt",
+      "n": 100000,
+      "scenarios": {
+        "user.get": {
+          "ops": 1000000,
+          "warmOps": 200,
+          "opsPerSec": 1100858.7,
+          "p50us": 0.79,
+          "p99us": 1.4,
+          "meanUs": 0.82,
+          "maxUs": 104
+        },
+        "user.set": {
+          "ops": 516,
+          "warmOps": 52,
+          "opsPerSec": 257.6,
+          "p50us": 3827.25,
+          "p99us": 4870.41,
+          "meanUs": 3880.17,
+          "maxUs": 9214,
+          "bytesPerOp": 58611,
+          "durable": true
+        },
+        "user.set.batch100": {
+          "txns": 165,
+          "opsPerSec": 8240,
+          "txnP50us": 11977.13,
+          "txnP99us": 16021.72,
+          "bytesPerOp": 10517,
+          "durable": true
+        },
+        "message.xp": {
+          "ops": 483191,
+          "warmOps": 200,
+          "opsPerSec": 241595.1,
+          "p50us": 3.77,
+          "p99us": 7.93,
+          "meanUs": 3.94,
+          "maxUs": 2826.4
+        },
+        "xp.flush": {
+          "intervalS": 30,
+          "updatesPerFlush": 1500,
+          "flushMainThreadMs": 11.18,
+          "flushWallMs": 40.56,
+          "bytesPerFlush": 5583136,
+          "bytesPerUpdate": 3722.1,
+          "durable": true
+        },
+        "xp.flush.2min": {
+          "intervalS": 120,
+          "updatesPerFlush": 6000,
+          "flushMainThreadMs": 33.86,
+          "flushWallMs": 66.83,
+          "bytesPerFlush": 6271272,
+          "bytesPerUpdate": 1045.2,
+          "durable": true
+        },
+        "config.read": {
+          "ops": 149549,
+          "warmOps": 200,
+          "opsPerSec": 74774.1,
+          "p50us": 12.45,
+          "p99us": 23.56,
+          "meanUs": 13,
+          "maxUs": 1580.8
+        },
+        "audit.append": {
+          "ops": 632,
+          "warmOps": 59,
+          "opsPerSec": 316,
+          "p50us": 3119.32,
+          "p99us": 3942.72,
+          "meanUs": 3164.07,
+          "maxUs": 8584.7,
+          "bytesPerOp": 33429,
+          "durable": true
+        },
+        "audit.append.coalesced": {
+          "ops": 132801,
+          "warmOps": 200,
+          "opsPerSec": 66366.8,
+          "p50us": 0.46,
+          "p99us": 1.17,
+          "meanUs": 13.67,
+          "maxUs": 19474,
+          "dropped": 0,
+          "bytesPerOp": 996,
+          "durable": "after the 5 s flush"
+        },
+        "audit.view": {
+          "ops": 53571,
+          "warmOps": 200,
+          "opsPerSec": 26785.1,
+          "p50us": 34.02,
+          "p99us": 67.59,
+          "meanUs": 36.75,
+          "maxUs": 1100.2
+        },
+        "top10": {
+          "ops": 268175,
+          "warmOps": 200,
+          "opsPerSec": 134087.4,
+          "p50us": 6.5,
+          "p99us": 11.87,
+          "meanUs": 6.81,
+          "maxUs": 900.5
+        }
+      },
+      "setupMs": 2193,
+      "files": {
+        "hotMdbBytes": 16125952,
+        "coldMdbBytes": 344064
+      },
+      "rssLoaded": {
+        "rssMB": 98.4,
+        "anonMB": 36,
+        "fileMB": 62.4,
+        "shmemMB": 0,
+        "hwmMB": 99.4
+      },
+      "dbStats": {
+        "hot": {
+          "entries": 427206,
+          "pages": 7112,
+          "freePages": 3065,
+          "fileBytes": 29130752,
+          "pageSize": 4096,
+          "mapSize": 2147483648,
+          "collections": {
+            "guild": {
+              "entries": 0,
+              "pages": 0,
+              "freePages": 3065
+            },
+            "guild_feature": {
+              "entries": 4500,
+              "pages": 33,
+              "freePages": 3065
+            },
+            "feature_enabled": {
+              "entries": 4500,
+              "pages": 54,
+              "freePages": 3065
+            },
+            "feature_config": {
+              "entries": 1000,
+              "pages": 73,
+              "freePages": 3065
+            },
+            "user": {
+              "entries": 100000,
+              "pages": 1507,
+              "freePages": 3065
+            },
+            "user_by_plan": {
+              "entries": 100000,
+              "pages": 623,
+              "freePages": 3065
+            },
+            "user_by_expiry": {
+              "entries": 17202,
+              "pages": 218,
+              "freePages": 3065
+            },
+            "news": {
+              "entries": 0,
+              "pages": 0,
+              "freePages": 3065
+            },
+            "level": {
+              "entries": 100000,
+              "pages": 747,
+              "freePages": 3065
+            },
+            "level_by_xp": {
+              "entries": 100000,
+              "pages": 780,
+              "freePages": 3065
+            },
+            "kv": {
+              "entries": 1,
+              "pages": 1,
+              "freePages": 3065
+            }
+          }
+        },
+        "cold": {
+          "entries": 138694,
+          "pages": 1660,
+          "freePages": 122,
+          "fileBytes": 13598720,
+          "pageSize": 8192,
+          "mapSize": 8589934592,
+          "collections": {
+            "audit_202610": {
+              "entries": 138692,
+              "pages": 1532,
+              "freePages": 122
+            }
+          }
+        }
+      },
+      "rss": {
+        "rssMB": 224.6,
+        "anonMB": 134.9,
+        "fileMB": 89.7,
+        "shmemMB": 0,
+        "hwmMB": 231.3
+      },
+      "totalMs": 21311,
+      "rssWorking": {
+        "store": "spbt",
+        "n": 100000,
+        "bare": {
+          "rssMB": 53.5,
+          "anonMB": 13.5,
+          "fileMB": 40.1,
+          "shmemMB": 0,
+          "hwmMB": 53.5
+        },
+        "rss": {
+          "rssMB": 121.6,
+          "anonMB": 50,
+          "fileMB": 71.6,
+          "shmemMB": 0,
+          "hwmMB": 123.2
+        }
+      }
+    }
+  ],
+  "crash": {
+    "json": [
+      {
+        "n": 10000,
+        "fileBytes": 800002,
+        "kills": 100,
+        "corrupt": 11,
+        "emptyFile": 11,
+        "truncatedBytes": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "lostAcked": 0,
+        "usersLostOnCorrupt": 110242,
+        "ackedWrites": 2676
+      },
+      {
+        "n": 100000,
+        "fileBytes": 8000002,
+        "kills": 100,
+        "corrupt": 0,
+        "emptyFile": 0,
+        "truncatedBytes": [],
+        "lostAcked": 0,
+        "usersLostOnCorrupt": 0,
+        "ackedWrites": 171
+      }
+    ],
+    "spbt": [
+      {
+        "n": 100000,
+        "kills": 100,
+        "openFailed": 0,
+        "corrupt": 0,
+        "lostAcked": 0,
+        "partialTxn": 0,
+        "indexMismatch": 0,
+        "dirtyBootDetected": 100,
+        "ackedTxnsTotal": 587840,
+        "openMsP50": 20.77,
+        "openMsP99": 26.64,
+        "openMsMax": 1618.33
+      }
+    ]
+  },
+  "dir": "~/.cache/spbtdb-bench"
+}

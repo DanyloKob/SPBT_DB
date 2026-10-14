@@ -72,3 +72,15 @@ passes now.
 - `open()` and `openDB()` entry points; `openTanoDB()` stays as an alias.
 - Coalescer metrics: `rejected` (entries dropped by isolation) and `failing`.
 - Scheduler option `scanMax`.
+- `bench/json-vs-spbtdb.mjs` (with `bench/v26-stores.mjs`, the v26 storage code): the TANO v26
+  JSON-file storage patterns against SPBT_DB, including kill -9 crash tests of both.
+- `bench/size-facts.mjs`: lines of code, package and install size, idle RAM, bytes per record.
+
+### Measured
+
+`bench/results-2026-10-14-json-vs-spbtdb.md` (and `-run2`, which agreed within 12 %),
+`bench/results-2026-10-14-size-facts.md`. In short: reads that v26 did by parsing a whole file
+are 35×–55 000× faster, the per-message XP path about 5×, config reads 2×; single durable writes
+on small data are slower than v26's non-durable rewrites (0.1×–0.4×); RSS is 20–35 MB higher on
+small data; 0 of 200 kill -9 runs damaged SPBT_DB, while v26 emptied its user file in 2–11 of 100
+kills.

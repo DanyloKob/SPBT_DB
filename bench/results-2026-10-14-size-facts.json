@@ -1,0 +1,316 @@
+{
+  "date": "2026-10-14",
+  "node": "v22.23.1",
+  "cpu": "AMD Ryzen 5 7535HS with Radeon Graphics",
+  "platform": "linux-x64",
+  "loc": {
+    "files": 16,
+    "code": 3718,
+    "comment": 1309,
+    "blank": 418,
+    "total": 5445,
+    "perFile": {
+      "ai-schema.js": {
+        "code": 45,
+        "comment": 33,
+        "blank": 9,
+        "total": 87
+      },
+      "backend-lmdb.js": {
+        "code": 180,
+        "comment": 90,
+        "blank": 32,
+        "total": 302
+      },
+      "backend-memory.js": {
+        "code": 187,
+        "comment": 21,
+        "blank": 26,
+        "total": 234
+      },
+      "backend.js": {
+        "code": 14,
+        "comment": 77,
+        "blank": 9,
+        "total": 100
+      },
+      "blobs.js": {
+        "code": 319,
+        "comment": 94,
+        "blank": 32,
+        "total": 445
+      },
+      "boot.js": {
+        "code": 30,
+        "comment": 34,
+        "blank": 7,
+        "total": 71
+      },
+      "buckets.js": {
+        "code": 244,
+        "comment": 76,
+        "blank": 24,
+        "total": 344
+      },
+      "coalesce.js": {
+        "code": 302,
+        "comment": 95,
+        "blank": 20,
+        "total": 417
+      },
+      "collection.js": {
+        "code": 614,
+        "comment": 195,
+        "blank": 62,
+        "total": 871
+      },
+      "frame.js": {
+        "code": 213,
+        "comment": 78,
+        "blank": 30,
+        "total": 321
+      },
+      "index.js": {
+        "code": 121,
+        "comment": 51,
+        "blank": 19,
+        "total": 191
+      },
+      "keys.js": {
+        "code": 318,
+        "comment": 88,
+        "blank": 32,
+        "total": 438
+      },
+      "sched.js": {
+        "code": 400,
+        "comment": 145,
+        "blank": 42,
+        "total": 587
+      },
+      "schema.js": {
+        "code": 71,
+        "comment": 46,
+        "blank": 13,
+        "total": 130
+      },
+      "ttl.js": {
+        "code": 127,
+        "comment": 57,
+        "blank": 13,
+        "total": 197
+      },
+      "vector.js": {
+        "code": 533,
+        "comment": 129,
+        "blank": 48,
+        "total": 710
+      }
+    },
+    "testFiles": 16,
+    "testCode": 2820
+  },
+  "pack": {
+    "tarballBytes": 95666,
+    "unpackedBytes": 294451,
+    "files": 21,
+    "fileList": [
+      "CHANGELOG.md",
+      "LICENSE",
+      "README.md",
+      "README.uk.md",
+      "package.json",
+      "src/ai-schema.js",
+      "src/backend-lmdb.js",
+      "src/backend-memory.js",
+      "src/backend.js",
+      "src/blobs.js",
+      "src/boot.js",
+      "src/buckets.js",
+      "src/coalesce.js",
+      "src/collection.js",
+      "src/frame.js",
+      "src/index.js",
+      "src/keys.js",
+      "src/sched.js",
+      "src/schema.js",
+      "src/ttl.js",
+      "src/vector.js"
+    ]
+  },
+  "installed": {
+    "nodeModulesBytes": 21081817,
+    "packages": {
+      "@harperfast/extended-iterable": 68197,
+      "@lmdb/lmdb-linux-x64": 15644565,
+      "@msgpackr-extract/msgpackr-extract-linux-x64": 60832,
+      "detect-libc": 26437,
+      "lmdb": 2540016,
+      "msgpackr": 2128622,
+      "msgpackr-extract": 15646,
+      "node-addon-api": 393771,
+      "node-gyp-build-optional-packages": 14806,
+      "ordered-binary": 160769,
+      "weak-lru-cache": 28156
+    },
+    "nativePrebuilds": {
+      "@lmdb/lmdb-linux-x64": 15644565,
+      "@msgpackr-extract/msgpackr-extract-linux-x64": 60832
+    }
+  },
+  "idle": [
+    {
+      "variant": "node",
+      "rssMB": 53.5,
+      "anonMB": 13.5,
+      "fileMB": 40,
+      "heapUsedMB": 3.7
+    },
+    {
+      "variant": "import",
+      "rssMB": 71.5,
+      "anonMB": 23,
+      "fileMB": 48.5,
+      "heapUsedMB": 5.8
+    },
+    {
+      "variant": "open",
+      "rssMB": 71.7,
+      "anonMB": 23.2,
+      "fileMB": 48.5,
+      "heapUsedMB": 6.2
+    },
+    {
+      "variant": "open+sched",
+      "rssMB": 72.1,
+      "anonMB": 23.8,
+      "fileMB": 48.3,
+      "heapUsedMB": 6.2
+    }
+  ],
+  "records": {
+    "guild": {
+      "records": 20000,
+      "keyBytes": 8,
+      "valueBytes": 102.3,
+      "onPagesBytes": 179.4,
+      "withIndexesBytes": 179.4,
+      "indexes": [],
+      "pageSize": 4096,
+      "insertOrder": "random"
+    },
+    "guild_feature": {
+      "records": 50000,
+      "keyBytes": 9,
+      "valueBytes": 8,
+      "onPagesBytes": 41.4,
+      "withIndexesBytes": 70.4,
+      "indexes": [
+        "feature_enabled"
+      ],
+      "pageSize": 4096,
+      "insertOrder": "random",
+      "note": "varint codec, 9 features per guild"
+    },
+    "feature_config (levels, 0.5 KB JSON)": {
+      "records": 10000,
+      "keyBytes": 9,
+      "valueBytes": 223,
+      "onPagesBytes": 378.5,
+      "withIndexesBytes": 378.5,
+      "indexes": [],
+      "pageSize": 4096,
+      "insertOrder": "random",
+      "note": "msgpack, under the 512 B deflate threshold (same schema, separate DBI)"
+    },
+    "feature_config (moderation, 4.4 KB JSON)": {
+      "records": 10000,
+      "keyBytes": 9,
+      "valueBytes": 398.5,
+      "onPagesBytes": 682,
+      "withIndexesBytes": 682,
+      "indexes": [],
+      "pageSize": 4096,
+      "insertOrder": "random",
+      "note": "msgpack + deflate (the moderation config of 12 commands)"
+    },
+    "user": {
+      "records": 50000,
+      "keyBytes": 8,
+      "valueBytes": 51.8,
+      "onPagesBytes": 105.3,
+      "withIndexesBytes": 138.5,
+      "indexes": [
+        "user_by_plan",
+        "user_by_expiry"
+      ],
+      "pageSize": 4096,
+      "insertOrder": "random",
+      "note": "10 % premium with an expiry (user_by_expiry is sparse)"
+    },
+    "news": {
+      "records": 2000,
+      "keyBytes": 8,
+      "valueBytes": 2054,
+      "onPagesBytes": 4137,
+      "withIndexesBytes": 4137,
+      "indexes": [],
+      "pageSize": 4096,
+      "insertOrder": "time"
+    },
+    "level": {
+      "records": 100000,
+      "keyBytes": 16,
+      "valueBytes": 3,
+      "onPagesBytes": 43.4,
+      "withIndexesBytes": 87.2,
+      "indexes": [
+        "level_by_xp"
+      ],
+      "pageSize": 4096,
+      "insertOrder": "random",
+      "note": "500 guilds x 200 members"
+    },
+    "kv": {
+      "records": 20001,
+      "keyBytes": 17.4,
+      "valueBytes": 6.9,
+      "onPagesBytes": 50.4,
+      "withIndexesBytes": 50.4,
+      "indexes": [],
+      "pageSize": 4096,
+      "insertOrder": "random"
+    },
+    "sched": {
+      "records": 50000,
+      "keyBytes": 9,
+      "valueBytes": 39.1,
+      "onPagesBytes": 86.8,
+      "withIndexesBytes": 135.6,
+      "indexes": [
+        "sched_by_subject"
+      ],
+      "pageSize": 4096,
+      "insertOrder": "random dueAt",
+      "note": "a third of the jobs carry a ~45 B payload"
+    },
+    "event_log": {
+      "records": 100000,
+      "keyBytes": 8,
+      "valueBytes": 244.9,
+      "onPagesBytes": 485.1,
+      "withIndexesBytes": 536.2,
+      "indexes": [
+        "elog_by_chan_202610",
+        "elog_by_msg_202610"
+      ],
+      "pageSize": 8192,
+      "insertOrder": "time (appendMany of 512)",
+      "note": "40-200 char messages, 15 % edits"
+    },
+    "_files": {
+      "hotMdbBytes": 59146240,
+      "coldMdbBytes": 57966592
+    }
+  }
+}
