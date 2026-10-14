@@ -56,7 +56,7 @@ export function fakeTime(start = Date.now()) {
  * `log` holds per-txn { puts, dels } so tests can check batch bounds.
  */
 export function counted(be) {
-  const c = { commits: 0, log: [], cur: null, failNext: 0 };
+  const c = { commits: 0, log: [], cur: null, failNext: 0, failNextSync: 0 };
   const w = { ...be };
   const track = (fn) => () => {
     const s = { puts: 0, dels: 0 };
@@ -67,6 +67,7 @@ export function counted(be) {
   };
   w.txn = (fn) => {
     if (be.inTxn()) return be.txn(fn);
+    if (c.failNextSync > 0) { c.failNextSync--; throw new Error('injected sync commit failure'); }
     c.commits++;
     return be.txn(track(fn));
   };

@@ -8,7 +8,8 @@
 // flushMs), or `maxEntries` keys/rows, or flush()/close()/process 'beforeExit'. A flush
 // swaps the buffer out and commits it in exactly one txn - `txnAsync` by default, so the
 // ~5 ms commit + fsync runs off the main thread. If the txn fails, the batch is merged
-// back into the buffer and retried on the next trigger.
+// back into the buffer and retried once at once with every entry in its own savepoint (an
+// entry that fails on its own is dropped and reported), then only on the flushMs timer.
 //
 // What kill -9 loses: everything still in the buffer, i.e. at most `flushMs` of updates
 // (level: <= 30 s of XP, event_log: <= 5 s of logs). Nothing already committed is lost.
@@ -58,19 +59,32 @@ function track(c) {
 
 /**
  * Shared flush machinery.
+ *
+ * Failures. A flush that throws (a commit error, or one entry that cannot be written, e.g. an
+ * XP delta that would make a varint negative) restores its batch. The next attempt runs at once
+ * in ISOLATION mode: every entry in its own savepoint, so an entry that fails on its own is
+ * dropped (counted in `rejected`, reported to onError) and the rest commit. If every entry fails,
+ * the problem is the txn, not an entry: the batch is kept and retried on the flushMs timer, never
+ * in a loop, so a full disk cannot spin the event loop.
  * @param {import('./backend.js').Backend} backend
  * @param {CoalesceOptions} o
- * @param {{ size(): number, take(): any, apply(batch: any): void, restore(batch: any): void, count(batch: any): number }} impl
+ * @param {{ size(): number, take(): any, apply(batch: any): void, applyEach(batch: any, one: (fn: () => void) => boolean): any[], discard(batch: any, failed: any[]): void, restore(batch: any): void, count(batch: any): number }} impl
+ *        applyEach runs every entry through one() and returns the entries that failed; discard
+ *        removes them from the batch so that a later restore() does not bring them back
  */
 function core(backend, o, impl) {
   const clock = o.clock ?? Date.now;
   const timers = o.timers ?? globalThis;
   const flushMs = o.flushMs;
   const useAsync = o.async !== false;
-  let timer = null, firstAt = 0, inflight = null, again = false, closed = false;
+  let timer = null, firstAt = 0, inflight = null, again = false, closed = false, failures = 0;
   const m = {
-    ops: 0, flushes: 0, commits: 0, written: 0, errors: 0, overCap: 0, dropped: 0,
+    ops: 0, flushes: 0, commits: 0, written: 0, errors: 0, overCap: 0, dropped: 0, rejected: 0,
     lastFlushMs: 0, lastApplyMs: 0, lastFlushEntries: 0, lastAgeMs: 0, maxAgeMs: 0,
+  };
+  const report = (e, n, info) => {
+    if (o.onError) o.onError(e, n, info);
+    else console.error(`[spbt-db coalesce ${o.name ?? ''}] ${info && info.rejected ? 'entry rejected (dropped)' : 'flush failed, batch kept'}`, e);
   };
 
   function armTimer() {
@@ -84,7 +98,7 @@ function core(backend, o, impl) {
   function touched(n) {
     m.ops++;
     if (firstAt === 0) { firstAt = clock(); armTimer(); }
-    if (n >= o.maxEntries) {
+    if (n >= o.maxEntries && failures === 0) { // while flushes fail, only the timer retries
       if (inflight) again = true;
       else c.flush().catch(() => {});
     }
@@ -96,9 +110,18 @@ function core(backend, o, impl) {
     touched,
     get pending() { return impl.size(); },
 
-    /** Commit everything buffered in ONE txn. Resolves when durable-committed. */
+    /**
+     * Commit everything buffered in ONE txn. Resolves when everything buffered at the time of
+     * the call is durably committed (a flush already in flight is waited for, then whatever was
+     * buffered meanwhile is flushed too).
+     */
     flush() {
-      if (inflight) { again = true; return inflight; }
+      if (inflight) {
+        again = true;
+        // the in-flight batch was taken before the caller's latest ops: wait for it, then for the
+        // flush that picks those ops up (started by its finally, or started here)
+        return inflight.catch(() => {}).then(() => inflight ?? c.flush());
+      }
       if (impl.size() === 0) { clearTimer(); firstAt = 0; return Promise.resolve(0); }
       clearTimer();
       const age = firstAt ? clock() - firstAt : 0;
@@ -107,28 +130,50 @@ function core(backend, o, impl) {
       const n = impl.count(b);
       if (n === 0) { m.flushes++; m.lastFlushEntries = 0; return Promise.resolve(0); } // nothing to write: no txn, no fsync
       const t0 = performance.now();
+      const isolate = failures > 0;
+      let rejected = 0, firstErr;
+      // one entry in its own savepoint; false = it failed and was rolled back alone
+      const one = (fn) => {
+        try { runTxn(backend, fn); return true; } catch (e) { rejected++; firstErr ??= e; return false; }
+      };
       // the txn callback always runs on the main thread (lmdb childTransaction included);
       // only commit + fsync move off-thread. lastApplyMs is that main-thread cost.
-      const apply = () => { const a0 = performance.now(); impl.apply(b); m.lastApplyMs = performance.now() - a0; };
+      const apply = () => {
+        const a0 = performance.now();
+        rejected = 0; firstErr = undefined;
+        if (!isolate) impl.apply(b);
+        else {
+          const failed = impl.applyEach(b, one);
+          if (failed.length && failed.length === n) throw firstErr; // not one entry went in: a txn-level failure, keep them all
+          if (failed.length) impl.discard(b, failed);
+        }
+        m.lastApplyMs = performance.now() - a0;
+      };
       const p = useAsync ? runTxnAsync(backend, apply) : new Promise((r) => r(runTxn(backend, apply)));
       inflight = p.then(
         () => {
-          m.flushes++; m.commits++; m.written += n;
-          m.lastFlushMs = performance.now() - t0; m.lastFlushEntries = n;
+          failures = 0;
+          const w = n - rejected;
+          m.flushes++; m.commits++; m.written += w; m.rejected += rejected;
+          m.lastFlushMs = performance.now() - t0; m.lastFlushEntries = w;
           m.lastAgeMs = age; if (age > m.maxAgeMs) m.maxAgeMs = age;
-          return n;
+          if (rejected) report(firstErr, rejected, { rejected: true });
+          return w;
         },
         (e) => {
+          failures++;
           m.errors++;
           impl.restore(b);
           if (firstAt === 0 && impl.size()) firstAt = clock() - age;
-          if (o.onError) o.onError(e, n); else console.error(`[spbt-db coalesce ${o.name ?? ''}] flush failed, batch kept`, e);
+          report(e, n);
           throw e;
         },
       ).finally(() => {
         inflight = null;
         if (impl.size() > 0) {
-          if (again || impl.size() >= o.maxEntries) { again = false; c.flush().catch(() => {}); } else armTimer();
+          // after the first failure: one immediate retry in isolation mode; after that, the timer
+          if (failures === 1 || (failures === 0 && (again || impl.size() >= o.maxEntries))) c.flush().catch(() => {});
+          else armTimer();
         }
         again = false;
       });
@@ -137,7 +182,7 @@ function core(backend, o, impl) {
 
     /** Lag metrics. oldestAgeMs = age of the oldest unflushed op (what kill -9 would lose). */
     metrics() {
-      return { name: o.name, pending: impl.size(), oldestAgeMs: firstAt ? clock() - firstAt : 0, inflight: !!inflight, ...m };
+      return { name: o.name, pending: impl.size(), oldestAgeMs: firstAt ? clock() - firstAt : 0, inflight: !!inflight, failing: failures > 0, ...m };
     },
 
     /** Flush and stop. */
@@ -200,17 +245,24 @@ export function createCounter(col, field, opts = {}) {
   }
   const cmp = (x, y) => { for (let i = 0; i < pkN; i++) { const a = x.k[i], b = y.k[i]; if (a !== b) return a < b ? -1 : 1; } return 0; };
 
+  function listOf(b) {
+    const list = [];
+    each(b, (e) => { if (e.d !== 0) list.push(e); });
+    if (o.sorted !== false) list.sort(cmp); // key order: neighbouring rows share leaf pages and cursor paths
+    return list;
+  }
   const impl = {
     size: () => size,
     take() { const b = root; root = new Map(); size = 0; return b; },
     count(b) { let n = 0; each(b, (e) => { if (e.d !== 0) n++; }); return n; }, // keys that net to 0 cost nothing
-    apply(b) {
-      const list = [];
-      each(b, (e) => { if (e.d !== 0) list.push(e); });
-      if (o.sorted !== false) list.sort(cmp); // key order: neighbouring rows share leaf pages and cursor paths
-      for (const e of list) col.incr(...e.k, field, e.d);
+    apply(b) { for (const e of listOf(b)) col.incr(...e.k, field, e.d); },
+    applyEach(b, one) {
+      const failed = [];
+      for (const e of listOf(b)) if (!one(() => col.incr(...e.k, field, e.d))) failed.push(e);
+      return failed;
     },
-    restore(b) { each(b, (e) => { slot(e.k).d += e.d; }); },
+    discard(b, failed) { for (const e of failed) e.d = 0; },
+    restore(b) { each(b, (e) => { if (e.d !== 0) slot(e.k).d += e.d; }); },
   };
   const c = core(col.backend, o, impl);
   const normKey = (k) => k.map((v, i) => (norm[i] ? norm[i](v) : v));
@@ -260,25 +312,30 @@ export function createCoalescer(col, mergeFn = patchMerge, opts = {}) {
   const fields = col.pk.fields.map((f) => f.name);
   /** @type {Map<string, object>} */
   let map = new Map();
+  function applyOne(rec) {
+    let next = rec;
+    if (!o.blind) {
+      const cur = col.get(...fields.map((f) => rec[f]));
+      if (cur !== undefined) {
+        const stored = Object.assign({}, cur);
+        for (const f of fields) stored[f] = rec[f];
+        next = mergeFn(stored, rec);
+        for (const f of fields) next[f] = rec[f];
+      }
+    }
+    col.put(next, o.put);
+  }
   const impl = {
     size: () => map.size,
     take() { const b = map; map = new Map(); return b; },
     count: (b) => b.size,
-    apply(b) {
-      for (const rec of b.values()) {
-        let next = rec;
-        if (!o.blind) {
-          const cur = col.get(...fields.map((f) => rec[f]));
-          if (cur !== undefined) {
-            const stored = Object.assign({}, cur);
-            for (const f of fields) stored[f] = rec[f];
-            next = mergeFn(stored, rec);
-            for (const f of fields) next[f] = rec[f];
-          }
-        }
-        col.put(next, o.put);
-      }
+    apply(b) { for (const rec of b.values()) applyOne(rec); },
+    applyEach(b, one) {
+      const failed = [];
+      for (const [ks, rec] of b) if (!one(() => applyOne(rec))) failed.push(ks);
+      return failed;
     },
+    discard(b, failed) { for (const ks of failed) b.delete(ks); },
     restore(b) {
       for (const [ks, rec] of b) { // the failed batch is older: fold newer buffered values onto it
         const cur = map.get(ks);
@@ -320,6 +377,17 @@ export function createAppender(backend, sink, opts = {}) {
     take() { const b = rows; rows = []; bytes = 0; return b; },
     count: (b) => b.length,
     apply: (b) => sink(b),
+    applyEach(b, one) {
+      const failed = [];
+      for (const r of b) if (!one(() => sink([r]))) failed.push(r);
+      return failed;
+    },
+    discard(b, failed) {
+      const drop = new Set(failed);
+      let w = 0;
+      for (let i = 0; i < b.length; i++) if (!drop.has(b[i])) b[w++] = b[i];
+      b.length = w;
+    },
     restore(b) {
       rows = b.concat(rows);
       if (rows.length > o.cap) { c.m.dropped += rows.length - o.cap; rows = rows.slice(rows.length - o.cap); }

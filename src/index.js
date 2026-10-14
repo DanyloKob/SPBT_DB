@@ -74,6 +74,8 @@ export function openDB(o = {}) {
   const collections = new Map();
   /** @type {import('./collection.js').Hooks} */
   const hooks = {};
+  /** @type {Promise<void> | null} */
+  let closing = null;
 
   const db = {
     /** Shared hooks (extension point: scheduler sets hooks.onExpiring). */
@@ -132,14 +134,24 @@ export function openDB(o = {}) {
     /** Resolves when all committed writes are durable. */
     flushed: () => Promise.all(Object.values(envs).map((b) => b && b.flushed && b.flushed())),
 
-    async close() {
-      // scheduler/sweeper stop, coalescer buffers flush, then __boot is marked clean
-      if (db.sched && db.sched.stop) await db.sched.stop();
-      if (db.ttl) await db.ttl.stop();
-      for (const c of db.coalescers ?? []) await c.close();
-      if (db.bootInfo && db.bootInfo()) markCleanShutdown(db, db.bootInfo(), { clock: o.clock });
-      for (const b of Object.values(envs)) if (b && b.close) await b.close();
-      collections.clear();
+    /**
+     * Stop the scheduler and sweeper, flush every coalescer, mark __boot clean, close the envs.
+     * Idempotent: a second call (a SIGTERM handler and a beforeExit hook, say) gets the same
+     * promise instead of touching closed envs; the envs are closed even if a step throws.
+     */
+    close() {
+      closing ??= (async () => {
+        try {
+          if (db.sched && db.sched.stop) await db.sched.stop();
+          if (db.ttl) await db.ttl.stop();
+          for (const c of db.coalescers ?? []) await c.close();
+          if (db.bootInfo && db.bootInfo()) markCleanShutdown(db, db.bootInfo(), { clock: o.clock });
+        } finally {
+          for (const b of Object.values(envs)) if (b && b.close) await b.close();
+          collections.clear();
+        }
+      })();
+      return closing;
     },
   };
 

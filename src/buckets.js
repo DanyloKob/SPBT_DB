@@ -14,7 +14,7 @@
 // (key = base \0 YYYYMM), written in the same txn as the first row of a month, so
 // dropExpired() also finds months this process never opened.
 
-import { runTxn } from './collection.js';
+import { runTxn, queryLimit } from './collection.js';
 import { prefixEnd, tuple } from './keys.js';
 import { snowflakeTs } from './schema.js';
 import { createAppender } from './coalesce.js';
@@ -179,7 +179,7 @@ export function createBucketed(db, base, schema, o = {}) {
       return ts === undefined || ((o0.from === undefined || ts >= o0.from) && (o0.to === undefined || ts < o0.to));
     };
     const its = cols.map((c, i) => {
-      const bo = { ...o, index: o.index ? `${o.index}_${ms[i]}` : undefined, pageSize: o0.limit !== undefined ? Math.min(256, o0.limit + 1) : 256 };
+      const bo = { ...o, index: o.index ? `${o.index}_${ms[i]}` : undefined, pageSize: o0.limit !== undefined ? Math.max(1, Math.min(256, queryLimit(o0.limit) + 1)) : 256 };
       delete bo.from; delete bo.to; delete bo.limit;
       return c.iterate(bo);
     });
@@ -254,12 +254,13 @@ export function createBucketed(db, base, schema, o = {}) {
       if (ms.length === 0) return { items: [], next: undefined };
       const { q, exact } = windowed(o);
       if (ms.length === 1 && exact) {
-        const one = { ...q, limit: o.limit ?? 1000, index: q.index ? `${q.index}_${ms[0]}` : undefined };
+        const one = { ...q, limit: queryLimit(o.limit), index: q.index ? `${q.index}_${ms[0]}` : undefined };
         if (q.index && !open(ms[0]).indexes[one.index]) throw new Error(`spbt-db bucketed ${base}: no index ${q.index}`);
         return open(ms[0]).query(one);
       }
-      const limit = o.limit ?? 1000;
+      const limit = queryLimit(o.limit);
       const items = [];
+      if (!(limit > 0)) return { items, next: undefined };
       let last = null, next;
       const it = merged(o);
       for (const h of it) {

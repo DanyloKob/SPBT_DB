@@ -85,7 +85,14 @@ export function createSweeper(db, o = {}) {
       const col = db.collections.get(name);
       if (!col) throw new Error(`spbt-db ttl: collection ${name} is not open`); // retried with backoff
       const raw = col.getFrame(pk);
-      if (raw !== undefined && raw[0] & HAS_TTL && frameExpiresAt(raw) <= ctx.now) col.delByKey(pk);
+      if (raw === undefined || !(raw[0] & HAS_TTL)) return;
+      const exp = frameExpiresAt(raw);
+      if (exp <= ctx.now) { col.delByKey(pk); return; }
+      // Not expired yet. The scheduler runs jobs up to fireEarlyMs (50 ms) early, and 'job'
+      // collections are never scanned: dropping this job would leave the row on disk for good.
+      // If the row still has the expiry this job was queued for, look again at that time. A row
+      // refreshed to a later expiry queued its own job when it was written, so this one ends.
+      if (exp === job.dueAt) return { reschedule: exp };
     }, { inTxn: true });
     sched.on('expire_range', async () => {
       await sweeper.sweep();

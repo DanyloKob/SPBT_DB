@@ -69,6 +69,17 @@ import { countRange } from './backend.js';
 const EMPTY = Buffer.alloc(0);
 const DEFAULT_LIMIT = 1000;
 
+/**
+ * A query limit as an integer: undefined -> 1000, '10' -> 10, 2.5 -> 2. A non-integer limit
+ * used to be compared with ===, never matched, and the query returned every row.
+ */
+export function queryLimit(l) {
+  if (l === undefined || l === null) return DEFAULT_LIMIT;
+  const n = Math.floor(Number(l));
+  if (Number.isNaN(n)) throw new TypeError(`spbt-db: query limit must be a number, got ${String(l)}`);
+  return n;
+}
+
 /* ------------------------------------------------------------- txn helpers */
 
 // Codecs that persisted new msgpackr shared structures inside a still-open txn.
@@ -80,11 +91,11 @@ function markPending(backend, codec) {
   if (!s) pendingStructs.set(backend, (s = new Set()));
   s.add(codec);
 }
-function settle(backend, ok) {
+function settle(backend, ok, keep) {
   const s = pendingStructs.get(backend);
   if (!s || !s.size) return;
   if (!ok) for (const c of s) c.reset();
-  s.clear();
+  if (!keep) s.clear();
 }
 
 /**
@@ -95,7 +106,13 @@ function settle(backend, ok) {
 export function runTxn(backend, fn, o) {
   const outer = !(backend.inTxn && backend.inTxn());
   let r;
-  try { r = o && o.lazy && outer && backend.txnLazy ? backend.txnLazy(fn) : backend.txn(fn); } catch (e) { settle(backend, false); throw e; }
+  try { r = o && o.lazy && outer && backend.txnLazy ? backend.txnLazy(fn) : backend.txn(fn); } catch (e) {
+    // A failed savepoint resets the codecs that saved structures in this txn, but they stay
+    // pending: if the outer txn aborts later, structures saved before the savepoint roll back
+    // too, and a codec that kept them in RAM would write records no other reader can decode.
+    settle(backend, false, !outer);
+    throw e;
+  }
   if (outer) settle(backend, true);
   return r;
 }
@@ -105,6 +122,10 @@ export function runTxn(backend, fn, o) {
  * @template T @param {Backend} backend @param {() => T} fn @returns {Promise<T>}
  */
 export function runTxnAsync(backend, fn) {
+  // Inside an open txn, lmdb-js childTransaction() runs fn at once as a SAVEPOINT of that txn and
+  // returns its plain result, not a promise: the "async" commit would join the caller's txn and
+  // roll back with it. Run it after the caller's txn instead, as its own commit.
+  if (backend.inTxn && backend.inTxn()) return Promise.resolve().then(() => runTxnAsync(backend, fn));
   if (!backend.txnAsync) return Promise.resolve().then(() => runTxn(backend, fn));
   return backend.txnAsync(fn).then(
     (r) => { settle(backend, true); return r; },
@@ -658,7 +679,9 @@ export function createCollection({ backend, name, schema, hooks = {} }) {
         const raw = backend.get(dbi, key);
         const isLive = raw !== undefined && live(raw, Date.now());
         // header first: decoding may load structures and reuse lmdb's volatile buffer
-        const keep = isLive && !o && raw[0] & HAS_TTL ? { expiresAt: frameExpiresAt(raw) } : o;
+        // keep the current expiry, including "never" (0): without it a schema default ttl would
+        // be applied to a record that was written without one
+        const keep = isLive && !o ? { expiresAt: raw[0] & HAS_TTL ? frameExpiresAt(raw) : 0 } : o;
         const cur = isLive ? decodeFull(raw) : undefined;
         const next = Object.assign({}, cur, partial);
         for (let i = 0; i < pkN; i++) next[pk.fields[i].name] = k[i];
@@ -679,7 +702,7 @@ export function createCollection({ backend, name, schema, hooks = {} }) {
       return write(backend, () => {
         const raw = backend.get(dbi, key);
         const isLive = raw !== undefined && live(raw, Date.now());
-        const keep = isLive && !o && raw[0] & HAS_TTL ? { expiresAt: frameExpiresAt(raw) } : o; // expired: fresh TTL
+        const keep = isLive && !o ? { expiresAt: raw[0] & HAS_TTL ? frameExpiresAt(raw) : 0 } : o; // expired: fresh TTL
         const cur = isLive ? decodeFull(raw) : {};
         const n = (cur[field] ?? 0) + delta;
         cur[field] = n;
@@ -732,7 +755,7 @@ export function createCollection({ backend, name, schema, hooks = {} }) {
      * @returns {{ items: any[], next: string | undefined }}
      */
     query(o = {}) {
-      const limit = o.limit ?? DEFAULT_LIMIT;
+      const limit = queryLimit(o.limit);
       const items = [];
       if (!(limit > 0)) return { items, next: undefined };
       const dup = !!o.index && ixByName[o.index]?.mode === 'dup';
@@ -757,7 +780,7 @@ export function createCollection({ backend, name, schema, hooks = {} }) {
      * `o.pageSize` (256) items through query() and its cursor, so writes between items are safe.
      */
     *iterate(o = {}) {
-      const page = { ...o, limit: o.pageSize ?? 256 };
+      const page = { ...o, limit: queryLimit(o.pageSize ?? 256) };
       for (;;) {
         const { items, next } = col.query(page);
         yield* items;
@@ -837,7 +860,7 @@ export function createCollection({ backend, name, schema, hooks = {} }) {
         for (const ix of ixs) backend.drop(ix.dbi);
         backend.drop(dbi);
         backend.del(metaDbi, structKey);
-        for (const ix of lagged) { backend.del(metaDbi, ix.wKey); ix.w = undefined; ix.tail = null; ix.pending = 0; }
+        for (const ix of lagged) { backend.del(metaDbi, ix.wKey); backend.del(metaDbi, ix.eKey); ix.w = undefined; ix.tail = null; ix.pending = 0; }
       });
       codec.reset();
     },

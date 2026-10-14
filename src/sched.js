@@ -110,7 +110,8 @@ const IX_SIZE = 17;
  * @property {number} [maxAttempts=5]     a throwing handler is retried with backoff, then dropped
  * @property {number} [retryBaseMs=1000]
  * @property {number} [retryMaxMs=3600000]
- * @property {number} [stallMs=1000]      re-check interval while due jobs have no handler
+ * @property {number} [stallMs=1000]      re-check interval while due jobs have no handler (or a commit failed)
+ * @property {number} [scanMax=batch*64]  due rows of unhandled kinds one wake may step over
  * @property {Record<string, number>} [kinds]  extra kind names -> u8 (100..255)
  * @property {(err: any, job?: Job, info?: { final: boolean }) => void} [onError]
  * @property {boolean} [autoStart=true]
@@ -246,7 +247,11 @@ export function createScheduler(db, o = {}) {
   /** @type {Map<number, { fn: Handler, inTxn: boolean }>} */
   const handlers = new Map();
   let seq = (Math.random() * 0x1000) | 0;
-  let handle = null, nextWake = Infinity, started = false, stopped = false, stalled = false;
+  let handle = null, nextWake = Infinity, started = false, stopped = false, stalled = false, commitFailed = false;
+  // due rows of kinds without a handler are skipped by their kind byte (no decode, no copy); a
+  // wake looks at no more than this many of them, so they can neither hide handled jobs behind
+  // them nor make one wake unbounded
+  const scanMax = o.scanMax ?? batchMax * 64;
   /** @type {Promise<any> | null} */
   let running = null;
   const m = {
@@ -257,7 +262,7 @@ export function createScheduler(db, o = {}) {
   /** insert inside an open txn; returns { dueAt, seq } */
   function insertRow(dueAt, row, ixKey) {
     if (!(dueAt >= 0)) dueAt = 0;
-    dueAt = Math.floor(dueAt);
+    dueAt = Math.min(Math.floor(dueAt), 0xffffffffffff); // u48, like at()
     const key = schedKey(dueAt, 0);
     let s = seq, tries = 0;
     for (;;) { // seq must be unique per dueAt, also against rows from earlier runs
@@ -310,7 +315,7 @@ export function createScheduler(db, o = {}) {
     const due = headDue();
     let wait = due - now;
     if (!(wait > 0)) wait = Number.isFinite(due) && Number.isFinite(now) ? 0 : maxSleep; // NaN/Infinity -> ceiling
-    if (wait === 0 && stalled) wait = stallMs;
+    if (wait === 0 && (stalled || commitFailed)) wait = stallMs; // no busy loop on unhandled jobs or a failing disk
     if (wait > maxSleep) wait = maxSleep; // never anywhere near MAX_TIMER_MS
     nextWake = now + wait;
     handle = timers.setTimeout(onTimer, wait);
@@ -335,6 +340,26 @@ export function createScheduler(db, o = {}) {
   function backoff(attempt) { return Math.min(retryBase * 2 ** attempt, retryMax); }
 
   /**
+   * Re-insert a job (retry or reschedule) inside the batch commit. A bad value - a reschedule
+   * that is not a time, a payload msgpackr cannot pack - fails THIS job (final, reported to
+   * onError). Thrown inside the commit, it would roll the whole batch back, and every handler in
+   * the batch would run again on every wake.
+   */
+  function reinsert(dueAt, spec, b) {
+    let row;
+    try {
+      if (dueAt instanceof Date) dueAt = dueAt.getTime();
+      if (typeof dueAt !== 'number' || Number.isNaN(dueAt)) throw new TypeError(`spbt-db sched: reschedule must be a time in ms, got ${String(dueAt)}`);
+      row = encodeJob(spec, spec.kindId);
+    } catch (e) {
+      b.err = e; b.final = true; m.failed++;
+      return false;
+    }
+    insertRow(dueAt, row, spec.indexed ? ixKeyFromRow(b.value) : null);
+    return true;
+  }
+
+  /**
    * Run everything due now (bounded batches, one commit per batch). The timer calls this;
    * tests and tools may call it directly. Resolves with the number of jobs processed.
    */
@@ -354,17 +379,22 @@ export function createScheduler(db, o = {}) {
           const horizon = Math.min(now + fireEarly, 0xffffffffffff - 1);
           const end = schedKey(Math.max(0, Math.floor(horizon) + 1), 0); // dueAt <= horizon
           const batch = [];
-          let scanned = 0, unhandled = 0;
-          for (const { key, value } of backend.range(dbi, { end, limit: batchMax * 4 })) {
-            scanned++;
-            const job = decodeJob(key, value);
-            const h = handlers.get(job.kindId);
-            if (!h) { unhandled++; continue; }
+          let unhandled = 0;
+          // Unhandled kinds are skipped by their kind byte, without a decode or a copy, and the
+          // walk goes on past them: a fixed window (it was batch x 4 rows) let enough of them
+          // starve every handled job queued behind them.
+          const visit = (key, value) => {
+            const h = handlers.get(value[1]); // row = HDR kind flags ...
+            if (!h) return ++unhandled < scanMax;
+            const v = Buffer.from(value.subarray(0, value.length)); // the scan hands a volatile buffer
+            const job = decodeJob(key, v);
             const lag = now - job.dueAt;
             const late = job.catchUp === 'skip' ? lag > graceMs : job.catchUp === 'runIfWithin' ? lag > job.maxLagMs : false;
-            batch.push({ key, value, job, h, lag, action: late ? 'skip' : 'run', result: undefined, err: undefined });
-            if (batch.length >= batchMax) break;
-          }
+            batch.push({ key, value: v, job, h, lag, action: late ? 'skip' : 'run', result: undefined, err: undefined });
+            return batch.length < batchMax;
+          };
+          if (backend.scan) backend.scan(dbi, { end }, visit);
+          else for (const { key, value } of backend.range(dbi, { end })) if (visit(key, value) === false) break;
           m.unhandled = unhandled;
           stalled = unhandled > 0 && batch.length === 0;
           m.lastWakeUs = Number(process.hrtime.bigint() - t0) / 1000;
@@ -378,42 +408,44 @@ export function createScheduler(db, o = {}) {
 
           // 2. ONE commit: delete the batch (idempotent), run inTxn handlers, retries, reschedules
           const after = clock();
-          runTxn(backend, () => {
-            for (const b of batch) {
-              const cur = backend.get(dbi, b.key);
-              if (cur === undefined) { b.gone = true; continue; } // cancelled meanwhile
-              if (b.action === 'run' && b.h.inTxn) {
-                try { b.result = runTxn(backend, () => b.h.fn(b.job, { now, lagMs: b.lag, db })); } catch (e) { b.err = e; }
+          try {
+            runTxn(backend, () => {
+              for (const b of batch) {
+                const cur = backend.get(dbi, b.key);
+                if (cur === undefined) { b.gone = true; continue; } // cancelled meanwhile
+                if (b.action === 'run' && b.h.inTxn) {
+                  try { b.result = runTxn(backend, () => b.h.fn(b.job, { now, lagMs: b.lag, db })); } catch (e) { b.err = e; }
+                }
+                deleteRow(b.key, b.value);
+                if (b.action === 'skip') { m.skipped++; continue; }
+                if (b.err !== undefined) {
+                  const j = b.job;
+                  if (j.attempt + 1 < maxAttempts) {
+                    if (reinsert(after + backoff(j.attempt), { ...j, attempt: j.attempt + 1 }, b)) m.retried++;
+                  } else m.failed++;
+                  continue;
+                }
+                m.fired++;
+                m.lastLagMs = b.lag;
+                if (b.lag > m.maxLagMs) m.maxLagMs = b.lag;
+                const r = b.result;
+                if (r && typeof r === 'object' && r.reschedule !== undefined) {
+                  const j = b.job;
+                  if (reinsert(r.reschedule, { ...j, attempt: 0, payload: 'payload' in r ? r.payload : j.payload }, b)) m.rescheduled++;
+                }
               }
-              deleteRow(b.key, b.value);
-              if (b.action === 'skip') { m.skipped++; continue; }
-              if (b.err !== undefined) {
-                const j = b.job;
-                if (j.attempt + 1 < maxAttempts) {
-                  const spec = { ...j, attempt: j.attempt + 1 };
-                  insertRow(after + backoff(j.attempt), encodeJob(spec, j.kindId), j.indexed ? ixKeyFromRow(b.value) : null);
-                  m.retried++;
-                } else m.failed++;
-                continue;
-              }
-              m.fired++;
-              m.lastLagMs = b.lag;
-              if (b.lag > m.maxLagMs) m.maxLagMs = b.lag;
-              const r = b.result;
-              if (r && typeof r === 'object' && r.reschedule !== undefined) {
-                const j = b.job;
-                const spec = { ...j, attempt: 0, payload: 'payload' in r ? r.payload : j.payload };
-                insertRow(r.reschedule, encodeJob(spec, j.kindId), j.indexed ? ixKeyFromRow(b.value) : null);
-                m.rescheduled++;
-              }
-            }
-          });
+            });
+          } catch (e) {
+            commitFailed = true; // the next wake waits stallMs instead of retrying at once
+            throw e;
+          }
+          commitFailed = false;
           m.commits++;
           for (const b of batch) {
-            if (b.err !== undefined && !b.gone) onError(b.err, b.job, { final: b.job.attempt + 1 >= maxAttempts });
+            if (b.err !== undefined && !b.gone) onError(b.err, b.job, { final: !!b.final || b.job.attempt + 1 >= maxAttempts });
           }
           total += batch.length;
-          if (batch.length < batchMax && scanned < batchMax * 4) break;
+          if (batch.length < batchMax) break; // the due range is exhausted (or only unhandled rows are left)
           await new Promise((r) => setImmediate(r)); // drain in slices, never hog the loop
         }
       } finally {
