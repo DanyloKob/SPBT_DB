@@ -2,6 +2,50 @@
 
 All notable changes to this project are listed here. Versions follow [Semantic Versioning](https://semver.org/).
 
+## Unreleased
+
+No change to the database's behaviour: `src/` changed only in comments.
+
+### Changed
+
+- **README (English and Ukrainian) rewritten** around who SPBT_DB is for, a Node.js bot or small
+  service on a small VPS that has outgrown its JSON files, and what it leaves out on purpose: no
+  server, no query language, no admin UI, no migration tool, one writer, no replication, no
+  browser or edge runtime. Its size claims are measured ones (about 3 700 lines, two dependencies,
+  a 93 KB package, 43 B per XP row), stated next to the fixed costs (about 18 MB of RSS for lmdb,
+  20 MB installed). `package.json` description and keywords match it; `vector-search` is no
+  longer a keyword (vectors stay an optional module).
+- **bench 01 write-amplification gates** (engineering notes, "Decisions taken (2026-10-18)",
+  item 3). The design's ≤ 1.6× now gates one append stream on an index-free collection with the
+  event_log key: 1.50×. event_log with its two lagged indexes and 80 active channels has its own
+  gates, ≤ 3.0× at 512 rows per commit and ≤ 3.5× at 250: 2.39× and 2.89×. The single stream
+  with indexes (1.77×) is informational.
+
+### Added
+
+- `--cold-page-size N` in bench 01, 02, 03, 05 and 08, passed on to every child process. Each
+  records the env's real page size and fails if it differs from the flag.
+- bench 02 measures cold event_log reads after page-cache eviction: the latest 100 rows of a
+  channel, and `byMessageId`. It reports latency, major faults and disk bytes read per query,
+  and runs each query type once more in its own fresh process. It flushes the lagged indexes
+  first, so the cold process does not rebuild their tail.
+
+### Fixed
+
+- bench 02 said cold.mdb runs with readahead. It has shipped `noReadAhead` since r2.
+- `bench/size-facts.mjs` computed event_log bytes per row with a hard-coded 8 KiB page. It now
+  uses the env's page size.
+
+### Measured
+
+- `bench/results-2026-10-18-cold-pagesize.md`: 4 KiB cold pages against the shipped 8 KiB.
+  4 KiB wrote 14–19 % fewer bytes for event_log, kept 40 % less of cold.mdb resident and read
+  43 % fewer disk bytes per cold `byMessageId`. It failed two of the six checks set before the
+  run: a cold channel view read 0.8 % more disk bytes, and file-backed resident memory was
+  56.4 MB against a 53 MB budget. **cold.mdb stays at 8 KiB.**
+- The same runs show that the 53 MB budget for file-backed `.mdb` pages fails at 0.3 of full
+  data size with either page size (8 KiB: 63–66 MB). The 41 MB measured in r2 was at 0.1.
+
 ## 0.1.0 (2026-10-14)
 
 The first public release. The code is the database written for the TANO Discord bot (TANO v27,
