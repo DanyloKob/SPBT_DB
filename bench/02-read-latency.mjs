@@ -18,15 +18,19 @@
 // `dd if=<file> iflag=nocache count=0` (GNU dd -> posix_fadvise(POSIX_FADV_DONTNEED), no root
 // needed), verify with `fincore` that the files left the page cache, and read random keys from a
 // FRESH process. Each first touch is then a real major fault served by the disk (noReadAhead =
-// MADV_RANDOM on hot.mdb, so ~1 page per fault). On tmpfs this is impossible (tmpfs IS the page
-// cache): the report then says the cold numbers are minor faults only.
+// MADV_RANDOM on both envs, so ~1 page per fault). The cold child also reads the cold event_log
+// (month bucket 202610): 300 x "latest 100 of a channel" and 1000 x byMessageId, reporting latency,
+// major faults and /proc/self/io read_bytes per query (keys: <dir>/elog-keys.json, written by the
+// parent after ev.flushLagged()).
+//   --cold-page-size N   page size of cold.mdb (lmdb-js applies it only when it creates the file)
+// On tmpfs this is impossible (tmpfs IS the page cache): the report then says the cold numbers are minor faults only.
 
 import fs from 'node:fs';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { openDB, coreSchemas } from '../src/index.js';
 import { prefixEnd } from '../src/keys.js';
-import { parseArgs, freshDir, fsInfo, report, rng, latencyNs, log, eventRow, featureConfig, benchSchemas, elogSchema, evictFile, fincore, BENCH_DIR, summary } from './lib.mjs';
+import { parseArgs, freshDir, fsInfo, report, rng, latencyNs, log, eventRow, featureConfig, benchSchemas, elogSchema, evictFile, fincore, BENCH_DIR, summary, procIo, lmdbWithCold, coldPageArgv, checkColdPageSize } from './lib.mjs';
 import { snowflakeTs } from '../src/schema.js';
 
 const args = parseArgs();
@@ -36,7 +40,7 @@ const COLD = args['cold-gets'] ?? 3000;
 
 const schemas = { level: coreSchemas.level, user: coreSchemas.user, feature_config: coreSchemas.feature_config, mod_case: benchSchemas.mod_case };
 const SEED = 2;
-const lmdbOpts = args['hot-mapsize'] !== undefined ? { hot: { mapSize: Number(args['hot-mapsize']) } } : undefined;
+const lmdbOpts = lmdbWithCold(args, args['hot-mapsize'] !== undefined ? { hot: { mapSize: Number(args['hot-mapsize']) } } : undefined);
 const N = { level: Math.round(200_000 * S), user: Math.round(200_000 * S), fc: Math.round(50_000 * S), cases: Math.round(100_000 * S), events: Math.round(300_000 * S) };
 
 /** Deterministic key material, shared by the parent (writer) and the cold child (reader). */
@@ -57,16 +61,17 @@ if (args.child === 'cold') {
   const db = openDB({ dir: args.cdir, schemas, lmdb: lmdbOpts });
   const openMs = performance.now() - t0;
   const R = rng(999);
+  const CG = args['elog-only'] ? 0 : COLD; // --elog-only chan|msg: an isolated run of one cold event_log query type
   const lat = [], latU = [];
   const f0 = majflt();
-  for (let i = 0; i < COLD; i++) {
+  for (let i = 0; i < CG; i++) {
     const k = levelKeys[R.int(levelKeys.length)];
     const a = process.hrtime.bigint();
     db.level.get(k[0], k[1]);
     lat.push(Number(process.hrtime.bigint() - a) / 1e3);
   }
   const f1 = majflt();
-  for (let i = 0; i < COLD; i++) {
+  for (let i = 0; i < CG; i++) {
     const u = uids[R.int(uids.length)];
     const a = process.hrtime.bigint();
     db.user.get(u);
@@ -76,9 +81,39 @@ if (args.child === 'cold') {
   // the same keys again: now resident (shows the cold/hot gap within one process)
   const R2 = rng(999);
   const again = [];
-  for (let i = 0; i < COLD; i++) { const k = levelKeys[R2.int(levelKeys.length)]; const a = process.hrtime.bigint(); db.level.get(k[0], k[1]); again.push(Number(process.hrtime.bigint() - a) / 1e3); }
+  for (let i = 0; i < CG; i++) { const k = levelKeys[R2.int(levelKeys.length)]; const a = process.hrtime.bigint(); db.level.get(k[0], k[1]); again.push(Number(process.hrtime.bigint() - a) / 1e3); }
   void gids;
-  process.stdout.write(JSON.stringify({ openMs, levelGetUs: summary(lat, 1), userGetUs: summary(latU, 1), sameKeysAgainUs: summary(again, 2), majorFaults: { level: f1 - f0, user: f2 - f1 }, majorFaultsPerGet: { level: +((f1 - f0) / COLD).toFixed(3), user: +((f2 - f1) / COLD).toFixed(3) } }));
+  // ---- cold event_log: index range + byMessageId, per-query latency / major faults / read_bytes
+  const ek = JSON.parse(fs.readFileSync(join(args.cdir, 'elog-keys.json'), 'utf8'));
+  const rb = () => procIo().read_bytes;
+  const o0 = { t: performance.now(), f: majflt(), b: rb() };
+  const ev = db.collection('event_log_202610', elogSchema(202610));
+  const evOpen = { ms: +(performance.now() - o0.t).toFixed(2), majorFaults: majflt() - o0.f, readBytes: rb() - o0.b };
+  const measureQ = (n, fn) => {
+    const lat = [], flt = [], byt = [];
+    const g0 = { f: majflt(), b: rb(), t: performance.now() };
+    for (let i = 0; i < n; i++) {
+      const f0 = majflt(), b0 = rb();
+      const a = process.hrtime.bigint();
+      fn(i);
+      const d = Number(process.hrtime.bigint() - a) / 1e3;
+      const f1 = majflt(), b1 = rb();
+      lat.push(d); flt.push(f1 - f0); byt.push(b1 - b0);
+    }
+    const sum = (x) => x.reduce((s, v) => s + v, 0);
+    return { queries: n, latencyUs: summary(lat, 1), majorFaultsPerQuery: +(sum(flt) / n).toFixed(3), readBytesPerQuery: Math.round(sum(byt) / n), readBytesPerQuerySummary: summary(byt, 0), totals: { majorFaults: sum(flt), readBytes: sum(byt), wallMs: +(performance.now() - g0.t).toFixed(1) } };
+  };
+  let sinkE = 0;
+  const chanQ = ek.chans.map((c) => [BigInt(c.gid), BigInt(c.chan)]);
+  const idQ = ek.msgIds.map((s) => BigInt(s));
+  const eventLog = {
+    open: evOpen,
+    latest100OfChannel: args['elog-only'] === 'msg' ? null : measureQ(chanQ.length, (i) => { sinkE += ev.query({ index: 'elog_by_chan_202610', where: chanQ[i], desc: true, limit: 100 }).items.length; }),
+    byMessageId: args['elog-only'] === 'chan' ? null : measureQ(idQ.length, (i) => { const id = idQ[i]; for (const r of ev.query({ prefix: [snowflakeTs(id)], limit: 16 }).items) if (r.msgId === id) { sinkE++; break; } }),
+    itemsReturned: sinkE,
+  };
+  const coldPageSize = db.stats().cold.pageSize;
+  process.stdout.write(JSON.stringify({ coldPageSize, eventLog, openMs, levelGetUs: summary(lat, 1), userGetUs: summary(latU, 1), sameKeysAgainUs: summary(again, 2), majorFaults: { level: f1 - f0, user: f2 - f1 }, majorFaultsPerGet: { level: +((f1 - f0) / COLD).toFixed(3), user: +((f2 - f1) / COLD).toFixed(3) } }));
   await db.close();
   process.exit(0);
 }
@@ -204,26 +239,48 @@ rep.check('event_log byMessageId p99 (edit/delete lookup)', hotUs.eventLogByMess
 log(`  hot level.get p50 ${hotUs.levelGet.p50} µs p99 ${hotUs.levelGet.p99} µs; event_log range100 p99 ${hotUs.eventLogRange100.p99} µs`);
 
 /* ------------------------------------------------------------- cold */
+ev.flushLagged(); // write the RAM tail of the lagged indexes, so the cold child does not rebuild it
+await db.flushed();
+{
+  const RE = rng(555);
+  const pick = Array.from({ length: 300 }, () => { const c = chans[RE.int(chans.length)]; return { gid: String(c.gid), chan: String(c.chan) }; });
+  const ids = Array.from({ length: 1000 }, () => String(msgIds[RE.int(msgIds.length)]));
+  fs.writeFileSync(join(dir, 'elog-keys.json'), JSON.stringify({ chans: pick, msgIds: ids }));
+}
+const coldPageSize = db.stats().cold.pageSize;
+checkColdPageSize(rep, args, coldPageSize);
 await db.close();
 const hotFile = join(dir, 'hot.mdb'), coldFile = join(dir, 'cold.mdb');
 const ev1 = evictFile(hotFile), ev2 = evictFile(coldFile);
-const cr = spawnSync(process.execPath, [join(BENCH_DIR, '02-read-latency.mjs'), '--child', 'cold', '--cdir', dir, '--scale', String(S), '--cold-gets', String(COLD), ...(lmdbOpts ? ['--hot-mapsize', String(args['hot-mapsize'])] : [])], { encoding: 'utf8' });
+const coldChild = (extra = []) => spawnSync(process.execPath, [join(BENCH_DIR, '02-read-latency.mjs'), '--child', 'cold', '--cdir', dir, '--scale', String(S), '--cold-gets', String(COLD), ...coldPageArgv(args), ...(args['hot-mapsize'] !== undefined ? ['--hot-mapsize', String(args['hot-mapsize'])] : []), ...extra], { encoding: 'utf8' });
+const cr = coldChild();
 let cold = null;
 try { cold = JSON.parse(cr.stdout); } catch { rep.note(`cold child failed: ${cr.stderr.slice(0, 400)}`); }
+// The combined child above runs the byMessageId queries on pages the channel queries already pulled in.
+// Isolated runs: evict again, then ONE query type per fresh process.
+const isolated = {};
+for (const kind of ['chan', 'msg']) {
+  const e = { hot: evictFile(hotFile), cold: evictFile(coldFile) };
+  const r = coldChild(['--elog-only', kind]);
+  try { const j = JSON.parse(r.stdout); isolated[kind] = { eviction: e, ...(kind === 'chan' ? j.eventLog.latest100OfChannel : j.eventLog.byMessageId), open: j.eventLog.open }; } catch { rep.note(`isolated ${kind} child failed: ${r.stderr.slice(0, 400)}`); }
+}
 const coldKind = !fsi.realDisk ? 'minor faults only: tmpfs cannot be evicted' : ev1.after === 0 ? 'major faults from disk (page cache evicted: fincore 0 B before the run)' : `partially evicted (fincore ${ev1.after} B still resident)`;
 if (cold) {
   rep.check('cold level.get p50 (first touch)', cold.levelGetUs.p50, '<=', 600, { unit: 'µs', informational: true, note: '§6.5 assumes a page fault on the target costs 400-600 µs' });
   rep.check('cold level.get p99', cold.levelGetUs.p99, '<=', 600, { unit: 'µs', informational: true });
+  checkColdPageSize(rep, args, cold.coldPageSize);
 }
 rep.note(`cold case: ${coldKind}`);
-rep.note('lmdb readahead: hot.mdb uses noReadAhead (MADV_RANDOM), cold.mdb does not');
+rep.note('lmdb readahead: hot.mdb and cold.mdb both ship noReadAhead (MADV_RANDOM; cold since r2)');
 
 const residentAfter = fincore(hotFile);
 fs.rmSync(dir, { recursive: true, force: true });
 if (sink === Math.PI) log(sink);
 rep.finish({
   fs: fsi,
+  coldPageSize,
   build: { seconds: +buildS.toFixed(1), hotFileMB: +(st.hot.fileBytes / 2 ** 20).toFixed(1), coldFileMB: +(st.cold.fileBytes / 2 ** 20).toFixed(1) },
   hotUs,
+  coldEventLogIsolated: isolated,
   cold: cold && { kind: coldKind, eviction: { hot: ev1, cold: ev2 }, residentAfterRunHotBytes: residentAfter, ...cold },
 });

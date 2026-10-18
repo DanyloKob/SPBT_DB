@@ -215,7 +215,8 @@ async function bytesPerRecord(dir) {
     let valBytes = 0, cnt = 0;
     const be = col.backend;
     for (const { value } of be.range(be.openCollection(col.name, {}), {})) { valBytes += value.length; cnt++; }
-    out.event_log = { records: cnt, keyBytes: 8, valueBytes: +(valBytes / cnt).toFixed(1), onPagesBytes: +((st[col.name].pages * 8192) / cnt).toFixed(1), withIndexesBytes: +(((st[col.name].pages + ix) * 8192) / cnt).toFixed(1), indexes: Object.keys(st).filter((k) => k !== col.name), pageSize: 8192, insertOrder: 'time (appendMany of 512)', note: '40-200 char messages, 15 % edits' };
+    const pageSize = db.stats().cold.pageSize;
+    out.event_log = { records: cnt, keyBytes: 8, valueBytes: +(valBytes / cnt).toFixed(1), onPagesBytes: +((st[col.name].pages * pageSize) / cnt).toFixed(1), withIndexesBytes: +(((st[col.name].pages + ix) * pageSize) / cnt).toFixed(1), indexes: Object.keys(st).filter((k) => k !== col.name), pageSize, insertOrder: 'time (appendMany of 512)', note: '40-200 char messages, 15 % edits' };
     process.stderr.write(`  event_log: ${JSON.stringify(out.event_log)}\n`);
   }
   out._files = { hotMdbBytes: fs.statSync(path.join(dir, 'hot.mdb')).size, coldMdbBytes: fs.statSync(path.join(dir, 'cold.mdb')).size };

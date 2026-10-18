@@ -25,7 +25,7 @@ import fs from 'node:fs';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { openDB, coreSchemas, compactCopy } from '../src/index.js';
-import { parseArgs, freshDir, fsInfo, report, rng, log, eventRow, featureConfig, elogSchema, procStatus, resetPeakRss, fileSize, evictFile, MB, BENCH_DIR } from './lib.mjs';
+import { parseArgs, freshDir, fsInfo, report, rng, log, eventRow, featureConfig, elogSchema, procStatus, resetPeakRss, fileSize, evictFile, MB, BENCH_DIR, lmdbWithCold, coldPageArgv, checkColdPageSize } from './lib.mjs';
 
 const args = parseArgs();
 const S = args.scale ?? 0.1;
@@ -39,7 +39,7 @@ if (args.child) {
   const cdir = args.cdir;
   const out = {};
   if (args.child === 'drop') {
-    const db = openDB({ dir: cdir, schemas: {} });
+    const db = openDB({ dir: cdir, schemas: {}, lmdb: lmdbWithCold(args) });
     db.collection('event_log_202609', elogSchema(202609));
     db.collection('event_log_202610', elogSchema(202610));
     const before = db.stats().cold;
@@ -49,6 +49,7 @@ if (args.child) {
     const t0 = performance.now();
     db.dropCollection('event_log_202609');
     out.dropMs = performance.now() - t0;
+    out.coldPageSize = db.stats().cold.pageSize;
     const m1 = procStatus();
     const afterDrop = db.stats().cold;
     // the next month: do the freed pages get reused?
@@ -69,7 +70,7 @@ if (args.child) {
     await db.close();
   } else if (args.child === 'compact-inproc') {
     // the pre-r2 way: env.backup(compact) inside the bot's own process (informational)
-    const db = openDB({ dir: cdir, schemas: hotSchemas });
+    const db = openDB({ dir: cdir, schemas: hotSchemas, lmdb: lmdbWithCold(args) });
     const dst = join(cdir, 'hot.inproc.mdb');
     gc();
     const m0 = procStatus();
@@ -85,7 +86,7 @@ if (args.child) {
     // as shipped: compactCopy() runs mdb_env_copy2(COMPACT) in a short-lived child process while
     // this process (the bot) keeps the env open; then close + rename + reopen
     const file = join(cdir, 'hot.mdb');
-    const db = openDB({ dir: cdir, schemas: hotSchemas });
+    const db = openDB({ dir: cdir, schemas: hotSchemas, lmdb: lmdbWithCold(args) });
     const st = db.stats().hot;
     const dst = join(cdir, 'hot.compact.mdb');
     gc();
@@ -102,7 +103,7 @@ if (args.child) {
     await db.close();
     fs.renameSync(dst, file);
     try { fs.rmSync(file + '-lock'); } catch {}
-    const db2 = openDB({ dir: cdir, schemas: hotSchemas });
+    const db2 = openDB({ dir: cdir, schemas: hotSchemas, lmdb: lmdbWithCold(args) });
     out.swapCloseRenameReopenMs = performance.now() - t1;
     out.countsMatchAfterSwap = JSON.stringify(counts) === JSON.stringify({ user: db2.user.count(), feature_config: db2.featureConfig.count() });
     out.fileBytesAfter = fileSize(file);
@@ -123,7 +124,7 @@ log(`08-compaction: bucket ${ROWS} rows, hot ~${HOT_MB} MB in ${dir} (${fsi.type
 const results = { fs: fsi };
 const cal = rep.r.calibration.factors;
 const runChild = (mode, cdir) => {
-  const r = spawnSync(process.execPath, ['--expose-gc', join(BENCH_DIR, '08-compaction.mjs'), '--child', mode, '--cdir', cdir, '--rows', String(ROWS)], { encoding: 'utf8' });
+  const r = spawnSync(process.execPath, ['--expose-gc', join(BENCH_DIR, '08-compaction.mjs'), '--child', mode, '--cdir', cdir, '--rows', String(ROWS), ...coldPageArgv(args)], { encoding: 'utf8' });
   if (r.status !== 0) throw new Error(`${mode} child failed: ${r.stderr}`);
   return JSON.parse(r.stdout);
 };
@@ -131,7 +132,7 @@ const runChild = (mode, cdir) => {
 /* -------------------------------------------------------------- A. drop */
 {
   const cdir = join(dir, 'cold');
-  const db = openDB({ dir: cdir, schemas: {} });
+  const db = openDB({ dir: cdir, schemas: {}, lmdb: lmdbWithCold(args) });
   const R = rng(8);
   const old = db.collection('event_log_202609', elogSchema(202609));
   const cur = db.collection('event_log_202610', elogSchema(202610));
@@ -146,6 +147,8 @@ const runChild = (mode, cdir) => {
   const ev = evictFile(join(cdir, 'cold.mdb'));
   const d = runChild('drop', cdir);
   results.drop = { buildSeconds: +buildS.toFixed(1), fileBytes, pageCacheEvicted: ev, ...d, dropMs: +d.dropMs.toFixed(2) };
+  results.coldPageSize = d.coldPageSize;
+  checkColdPageSize(rep, args, d.coldPageSize);
   const projected = cal ? (d.dropMs / 1000 / S) * cal.cpu : null;
   rep.check(`dropCollection of a ${d.droppedRows}-row month bucket (cold cache)`, d.dropMs / 1000, '<=', 2, { unit: 's', projected, note: `projection: x${(1 / S).toFixed(0)} rows (linear) x cpu factor; threshold is for 5M rows` });
   rep.check('RSS spike during drop', d.rss.peakDeltaMB, '<=', 40, { unit: 'MB', projected: S < 1 ? d.rss.anonDeltaMB + d.rss.fileDeltaMB / S : null, note: 'projection: file-backed part x 1/scale (pages read by the drop + readahead grow with the tree)' });
@@ -156,7 +159,7 @@ const runChild = (mode, cdir) => {
 /* ------------------------------------------------- B. copy-compaction */
 {
   const hdir = join(dir, 'hot');
-  const db = openDB({ dir: hdir, schemas: hotSchemas });
+  const db = openDB({ dir: hdir, schemas: hotSchemas, lmdb: lmdbWithCold(args) });
   const R = rng(9);
   const keys = [];
   const file = join(hdir, 'hot.mdb');

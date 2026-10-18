@@ -26,13 +26,13 @@ import fs from 'node:fs';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { openDB, coreSchemas, createAppender } from '../src/index.js';
-import { parseArgs, freshDir, fsInfo, report, rng, summary, procIo, log, eventRow, benchSchemas, elogSchema, BENCH_DIR, sleep } from './lib.mjs';
+import { parseArgs, freshDir, fsInfo, report, rng, summary, procIo, log, eventRow, benchSchemas, elogSchema, BENCH_DIR, sleep, lmdbWithCold, coldPageArgv, checkColdPageSize } from './lib.mjs';
 
 const args = parseArgs();
 
 // child mode for the strace fsync count
 if (args.child === 'commits') {
-  const db = openDB({ dir: args.cdir, schemas: { level: coreSchemas.level } });
+  const db = openDB({ dir: args.cdir, schemas: { level: coreSchemas.level }, lmdb: lmdbWithCold(args) });
   const ev = db.collection('event_log_202610', elogSchema(202610));
   db.txn(() => {}); db.coldTxn(() => {});
   process.stdout.write('READY\n');
@@ -100,7 +100,7 @@ function projectOps(a, rowsPerCommit) {
   return Math.round((rowsPerCommit / ms) * 1000);
 }
 
-const db = openDB({ dir, schemas: { level: coreSchemas.level } });
+const db = openDB({ dir, schemas: { level: coreSchemas.level }, lmdb: lmdbWithCold(args) });
 const hot = db.backend('hot').env;
 const results = { fs: fsi };
 
@@ -206,6 +206,8 @@ function evLogical(col, rowsList) {
       spaceAmplification: +((evPages * st.pageSize) / ((logical1 / nB1) * rowsTotal)).toFixed(2),
     },
   };
+  results.coldPageSize = st.pageSize;
+  checkColdPageSize(rep, args, st.pageSize);
   rep.check('event_log put/s, batched 512 (80 channels)', shaped.batch512.opsPerSec, '>=', 15000, { unit: 'put/s', projected: projectOps(shaped.batch512, 512) });
   rep.check('write amplification, append-key single stream (512/commit)', b1.writeAmplification, '<=', 1.6, { unit: 'x' });
   rep.check('write amplification, event_log 80 channels, 512/commit', shaped.batch512.writeAmplification, '<=', 1.6, { unit: 'x', note: 'as shipped: data + lagged elog_by_chan + elog_by_msg, catch-ups included' });
@@ -278,7 +280,7 @@ let straceCount = null;
   const cdir = join(dir, 'strace');
   const run = (k) => {
     fs.rmSync(cdir, { recursive: true, force: true });
-    const r = spawnSync('strace', ['-f', '-c', '-e', 'trace=fsync,fdatasync,msync,sync_file_range', process.execPath, join(BENCH_DIR, '01-write-throughput.mjs'), '--child', 'commits', '--cdir', cdir, '--k', String(k)], { encoding: 'utf8' });
+    const r = spawnSync('strace', ['-f', '-c', '-e', 'trace=fsync,fdatasync,msync,sync_file_range', process.execPath, join(BENCH_DIR, '01-write-throughput.mjs'), '--child', 'commits', '--cdir', cdir, '--k', String(k), ...coldPageArgv(args)], { encoding: 'utf8' });
     if (r.error || r.status !== 0) return null;
     let n = 0;
     for (const l of r.stderr.split('\n')) { const m = l.trim().split(/\s+/); if (['fsync', 'fdatasync', 'msync', 'sync_file_range'].includes(m[m.length - 1])) n += Number(m[3]); }

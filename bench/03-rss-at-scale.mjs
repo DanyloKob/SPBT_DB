@@ -29,7 +29,7 @@ import fs from 'node:fs';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { openDB, coreSchemas } from '../src/index.js';
-import { parseArgs, baseDir, fsInfo, report, rng, log, eventRow, featureConfig, builderScheme, benchSchemas, elogSchema, procStatus, smapsRollup, mappingRss, sleep, BENCH_DIR, fileSize, evictFile } from './lib.mjs';
+import { parseArgs, baseDir, fsInfo, report, rng, log, eventRow, featureConfig, builderScheme, benchSchemas, elogSchema, lmdbWithCold, coldPageArgv, checkColdPageSize, procStatus, smapsRollup, mappingRss, sleep, BENCH_DIR, fileSize, evictFile } from './lib.mjs';
 
 const args = parseArgs();
 const S = args.scale ?? 0.1;
@@ -62,7 +62,7 @@ if (args.child === 'gen') {
   const dir = args.cdir;
   const { gids, uids, chans } = ids();
   const R = rng(4);
-  const db = openDB({ dir, schemas });
+  const db = openDB({ dir, schemas, lmdb: lmdbWithCold(args) });
   const ev = db.collection(BUCKET, elogSchema(202610));
   const B = 5000;
   const t0 = performance.now();
@@ -98,7 +98,7 @@ if (args.child === 'mix') {
   if (args['cold-noreadahead']) lmdbOpts.cold.noReadAhead = true;
   if (args['cold-readahead']) lmdbOpts.cold.noReadAhead = false;
   if (args['hot-mapsize'] !== undefined) lmdbOpts.hot.mapSize = Number(args['hot-mapsize']);
-  const db = openDB({ dir, schemas, lmdb: lmdbOpts });
+  const db = openDB({ dir, schemas, lmdb: lmdbWithCold(args, lmdbOpts) });
   const ev = db.collection(BUCKET, elogSchema(202610));
   gc();
   samples.push(snap('opened'));
@@ -174,7 +174,7 @@ if (args.reuse && fs.existsSync(join(dir, 'hot.mdb'))) {
   fs.rmSync(dir, { recursive: true, force: true });
   fs.mkdirSync(dir, { recursive: true });
   log(`03-rss-at-scale: generating scale ${S} into ${dir} (${fsi.type}) ...`);
-  const g = spawnSync(process.execPath, [self, '--child', 'gen', '--cdir', dir, '--scale', String(S)], { encoding: 'utf8', maxBuffer: 64 * 2 ** 20 });
+  const g = spawnSync(process.execPath, [self, '--child', 'gen', '--cdir', dir, '--scale', String(S), ...coldPageArgv(args)], { encoding: 'utf8', maxBuffer: 64 * 2 ** 20 });
   if (g.status !== 0) { log(g.stderr); process.exit(2); }
   gen = JSON.parse(g.stdout);
   log(`  generated in ${gen.seconds.toFixed(1)} s`);
@@ -185,7 +185,7 @@ if (args.reuse && fs.existsSync(join(dir, 'hot.mdb'))) {
 // range instead of 2.4-2.8 from an evicted cache. That inflates RSS by a host artefact.
 const evicted = fsi.realDisk && !args['no-evict'] ? { hot: evictFile(join(dir, 'hot.mdb')), cold: evictFile(join(dir, 'cold.mdb')) } : null;
 log(`  mix: ${SECONDS} s at ${RATE} msg/s ...`);
-const m = spawnSync(process.execPath, ['--max-old-space-size=200', '--max-semi-space-size=8', '--expose-gc', self, '--child', 'mix', '--cdir', dir, '--scale', String(S), '--seconds', String(SECONDS), '--rate', String(RATE), ...(args['cold-noreadahead'] ? ['--cold-noreadahead'] : []), ...(args['cold-readahead'] ? ['--cold-readahead'] : []), ...(args['hot-mapsize'] !== undefined ? ['--hot-mapsize', String(args['hot-mapsize'])] : [])], { encoding: 'utf8', maxBuffer: 64 * 2 ** 20 });
+const m = spawnSync(process.execPath, ['--max-old-space-size=200', '--max-semi-space-size=8', '--expose-gc', self, '--child', 'mix', '--cdir', dir, '--scale', String(S), '--seconds', String(SECONDS), '--rate', String(RATE), ...coldPageArgv(args), ...(args['cold-noreadahead'] ? ['--cold-noreadahead'] : []), ...(args['cold-readahead'] ? ['--cold-readahead'] : []), ...(args['hot-mapsize'] !== undefined ? ['--hot-mapsize', String(args['hot-mapsize'])] : [])], { encoding: 'utf8', maxBuffer: 64 * 2 ** 20 });
 if (m.status !== 0) { log(m.stderr); process.exit(2); }
 const mix = JSON.parse(m.stdout);
 
@@ -221,6 +221,7 @@ const records = (name, ...ix) => {
 const files = { hotMB: +(fileSize(join(dir, 'hot.mdb')) / 2 ** 20).toFixed(1), coldMB: +(fileSize(join(dir, 'cold.mdb')) / 2 ** 20).toFixed(1) };
 
 const results = {
+  coldPageSize: mix.dbStats.cold.pageSize,
   fs: fsi,
   gen,
   pageCacheEvictedBeforeMix: evicted,
@@ -255,6 +256,7 @@ const results = {
   samples,
 };
 
+checkColdPageSize(rep, args, mix.dbStats.cold.pageSize);
 // §6.4: whole-process budget (TANO = Node + discord.js + web + features + SPBT_DB)
 rep.check('RSS peak (Node + SPBT_DB only) <= 270 MB', results.memory.peakRssMB, '<=', 270, { unit: 'MB' });
 rep.check('anonymous peak <= 200 MB', results.memory.peakAnonMB, '<=', 200, { unit: 'MB' });

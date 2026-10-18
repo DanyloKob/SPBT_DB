@@ -330,3 +330,18 @@ export const benchSchemas = {
     indexes: { scheme_by_updated: { key: 'ownerId:u64 updatedAt:inv48' } },
   },
 };
+
+/* ------------------------------------------- --cold-page-size plumbing */
+
+/** `--cold-page-size N` -> lmdb: { ...base, cold: { ...base.cold, pageSize: N } }. Without the flag: base unchanged. */
+export function lmdbWithCold(args, base) {
+  if (args['cold-page-size'] === undefined) return base;
+  return { ...base, cold: { ...(base?.cold ?? {}), pageSize: Number(args['cold-page-size']) } };
+}
+/** argv fragment to forward the flag to a child process */
+export const coldPageArgv = (args) => (args['cold-page-size'] === undefined ? [] : ['--cold-page-size', String(args['cold-page-size'])]);
+/** gate: the env's real page size must equal the flag (no flag: informational only) */
+export function checkColdPageSize(rep, args, actual) {
+  if (args['cold-page-size'] === undefined) return;
+  rep.check('cold page size equals --cold-page-size', actual, '==', Number(args['cold-page-size']), { unit: 'B' });
+}

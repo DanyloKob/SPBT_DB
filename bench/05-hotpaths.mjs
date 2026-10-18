@@ -15,7 +15,7 @@
 
 import fs from 'node:fs';
 import { openDB } from '../src/index.js';
-import { parseArgs, freshDir, fsInfo, report, rng, log, eventRow, elogSchema } from './lib.mjs';
+import { parseArgs, freshDir, fsInfo, report, rng, log, eventRow, elogSchema, lmdbWithCold, checkColdPageSize } from './lib.mjs';
 
 const args = parseArgs();
 const USERS = args.levels ?? 100_000;
@@ -29,7 +29,7 @@ const ms = (t0) => Number(hr() - t0) / 1e6;
 const R = rng(0x9e3779b9);
 const results = { fs: fsi };
 
-const db = openDB({ dir, sched: true, coalesce: { level: { flushMs: 1e9, maxEntries: 1e9, cap: 1e9 } } });
+const db = openDB({ dir, sched: true, coalesce: { level: { flushMs: 1e9, maxEntries: 1e9, cap: 1e9 } }, lmdb: lmdbWithCold(args) });
 
 /* ---- 1. level.bump into the coalescer */
 const GUILDS = 500;
@@ -163,6 +163,8 @@ log(`  wake ${results.schedWake.idleWakeUs} µs idle, fire 500 in ${results.sche
     (ev.backend.stat(ix).entries > e0 ? cb : plain).push(cbMs);
   }
   plain.sort((a, b) => a - b);
+  results.coldPageSize = db.stats().cold.pageSize;
+  checkColdPageSize(rep, args, results.coldPageSize);
   results.eventLogCatchUp = { lag, catchUps: cb.length, mainThreadMsPerCatchUpTxn: cb.map((x) => +x.toFixed(2)), mainThreadMsPlain512P50: +plain[Math.floor(plain.length / 2)].toFixed(2) };
   rep.check('event_log lagged catch-up: main-thread ms of that txn (512 rows + 8192-row tail, 2 indexes)', Math.max(...cb), '<=', 50, { unit: 'ms', scale: 'cpu', informational: true, note: 'once per 8192 rows; a plain 512-row append txn for comparison is mainThreadMsPlain512P50' });
   log(`  event_log catch-up ${cb.map((x) => x.toFixed(1)).join(', ')} ms vs ${results.eventLogCatchUp.mainThreadMsPlain512P50} ms for a plain 512-row txn`);
