@@ -2,17 +2,50 @@
 
 [Українською](README.uk.md)
 
-SPBT_DB is an embedded database for Node.js, written for a Discord bot that runs on a VPS with
-1 GB of RAM. It runs inside your process (there is no server), keeps its data in LMDB's
-memory-mapped B+tree through [lmdb-js](https://github.com/kriszyp/lmdb-js), and adds the parts a
-bot needs on top: order-preserving binary keys, secondary indexes written in the same
-transaction, a TTL stored in each record, a scheduler whose jobs survive restarts, write
-coalescers for hot counters, monthly time buckets, int8 vector search and a content-addressed
-blob store. It is about 3 700 lines of JavaScript (comments excluded) with two dependencies,
-`lmdb` and `msgpackr`. It replaced the JSON files of the TANO bot, where every read parsed a whole
-file and every write rewrote one.
+SPBT_DB is an embedded database for one kind of program: a Node.js bot or small service that runs
+as one process on a small VPS and has outgrown its JSON files. It runs inside your process, keeps
+the data in LMDB files through [lmdb-js](https://github.com/kriszyp/lmdb-js), and adds only what
+such a program needs: typed keys, indexes, expiry, a scheduler that survives restarts, and buffered
+writes for counters that change on every message. It was written for the TANO Discord bot, whose
+server has 1 GB of RAM.
 
-## Numbers first
+## What it is not
+
+Each of these is left out on purpose. Every feature costs code, memory and something to operate,
+and the program SPBT_DB is for does not need them.
+
+* **Not a server.** No port, no daemon, no connection string. It is a library and lives in your
+  process.
+* **No query language.** No SQL, joins, aggregations or ad-hoc filters. You read by key and by the
+  indexes you declared in the schema.
+* **No admin UI or shell.** You look at the data from your own code; `db.stats()` reports sizes
+  and page counts.
+* **No migration tool.** Records carry a schema id, and your `migrate` functions upgrade old
+  records when they are read. There is no bulk migrate command.
+* **One writer at a time.** LMDB serialises writes. Several processes on one machine can share the
+  files; several machines cannot.
+* **No replication and no point-in-time recovery.** `compactCopy` writes a consistent copy of a
+  live database; where the copy goes is up to you.
+* **No browser, edge or serverless runtime.** It needs lmdb's native module.
+
+If you need any of that, use SQLite (`node:sqlite`, `better-sqlite3`) or Postgres. If your data is
+a few kilobytes that rarely change, a JSON file written to a temp file and renamed into place is
+simpler and fast enough.
+
+What is left is small:
+
+* about 3 700 lines of JavaScript (comments excluded), two dependencies (`lmdb`, `msgpackr`) and a
+  93 KB package;
+* small records: one member's XP takes 43 B on disk, B+tree pages included;
+* records are read from the memory-mapped file on demand, not loaded into the JS heap, and the
+  kernel can drop those pages under memory pressure. From 10k to 100k users the bot-like
+  process's anonymous memory stayed at 49–53 MB, while the JSON version's grew from 23–24 MB to
+  82–84 MB.
+
+The fixed costs: loading the lmdb native module adds about 18 MB of RSS, and its prebuild is 15 MB
+of the 20 MB installed.
+
+## Numbers
 
 Measured on an AMD Ryzen 5 7535HS laptop (Zen 3+), Linux 7.1, btrfs (zstd) on NVMe, Node
 22.23.1, warm page cache. The comparison is against TANO v26's storage code, run unchanged
@@ -32,10 +65,10 @@ Measured on an AMD Ryzen 5 7535HS laptop (Zen 3+), Linux 7.1, btrfs (zstd) on NV
 | RSS with 1k / 100k users | 64 / 129–131 MB | 86 / 122–126 MB | **SPBT_DB uses more RAM on small data**: loading lmdb costs 18 MB |
 | package / installed size | – | 93 KB / 20 MB | the lmdb native prebuild is 15 MB of the 20 |
 
-So: reads that v26 answered by parsing a whole file are 35× to 55 000× faster, and the gap grows
-with the data. The per-message hot path is about 5× faster, config reads 2×. Single durable writes
-are slower than v26's unsafe rewrites while the files are small, and the process uses 20–35 MB
-more RAM until the data grows. None of it has been measured on the production server yet.
+Reads that v26 answered by parsing a whole file are 35× to 55 000× faster, and the gap grows with
+the data. The per-message hot path is about 5× faster, config reads 2×. Single durable writes are
+slower than v26's unsafe rewrites while the files are small, and the process uses 20–35 MB more
+RAM until the data grows. None of it has been measured on the production server yet.
 
 ## Quick start
 
@@ -74,9 +107,9 @@ bans with the scheduler (`tempban-scheduler.mjs`) and sessions with a TTL (`ttl-
 
 ## Concepts
 
-**Environments.** Data lives in up to two LMDB files: `hot.mdb` (4 KiB pages) for small records read
-on every event, and `cold.mdb` (8 KiB pages, opened on first use) for logs. A transaction never
-spans both.
+**Environments.** Data lives in up to two LMDB files: `hot.mdb` (4 KiB pages) for small records
+read on every event, and `cold.mdb` (8 KiB pages, opened on first use) for logs. A transaction
+never spans both.
 
 **Collections and keys.** A collection is a schema with a key: `'gid:u64 uid:u64'`. Keys are
 encoded big-endian and fixed-width, so byte order equals logical order and every range query is a
@@ -84,11 +117,11 @@ B+tree range. Types: `u8 u16 u24 u32 u48 u64 u64s inv32 inv48 str bN`. `u64` tak
 a bigint, a decimal string or a safe integer, and decodes to a bigint (`u64s` decodes to a string).
 `inv32`/`inv48` store `max - n`, which gives descending order (the leaderboard uses it).
 
-**Records (frames).** The stored value never repeats the key. It is a small header (optional schema
-id, update time, expiry) and a payload in one of three codecs: msgpack with structures shared per
+**Records.** The stored value never repeats the key. It is a small header (optional schema id,
+update time, expiry) and a payload in one of three codecs: msgpack with structures shared per
 collection, varint (`level` stores XP in 2–6 bytes), or raw bytes. msgpack payloads of 512 B or
-more are deflated when that makes them smaller. `schemaId` and `migrate` upgrade old records lazily
-on read.
+more are deflated when that makes them smaller. `schemaId` and `migrate` upgrade old records on
+read.
 
 **Indexes.** Declared in the schema and written in the same transaction as the record. `unique`,
 `filter` (sparse) and `covered` queries (answered from the index alone) are supported. A `lag: n`
@@ -103,7 +136,7 @@ time, so read-modify-write (`incr`, `patch`) is atomic even across processes.
 sweeper only frees the space, by a bounded daily scan (default) or by one scheduler job per record.
 
 **Scheduler.** `db.sched.at(when, { kind, gid, subject, payload })` writes a job row keyed by due
-time; joined with your transaction, the ban and its unban commit together. One timer per process,
+time; inside your transaction, the ban and its unban commit together. One timer per process,
 never longer than 60 s. Delivery is at-least-once, with retries and backoff, three catch-up
 policies for jobs that came due while the process was down, and cancel by `(gid, kind, subject)`
 through an index.
@@ -116,22 +149,25 @@ cannot be written is dropped on its own instead of blocking the batch.
 **Time buckets.** `db.bucketed('event_log', schema, { retentionDays: 30 })` stores each UTC month in
 its own collection. Queries merge the months; retention drops whole months in one transaction.
 
-**Vectors.** `attachVectors(db)` adds int8-quantised vectors per guild, scanned exactly with a
-small WebAssembly SIMD kernel: k-NN over 5 000 vectors takes about 0.1–0.2 ms here.
-
-**Blobs.** `attachBlobs(db, { dir })` stores files by content hash with reference counts in the
-database, keeps blobs under 1 KB inline, and garbage-collects after a grace period.
+**Vectors and blobs** (optional). `attachVectors(db)` from `spbt-db/vector` adds int8 vectors per
+guild, scanned exactly with a small WebAssembly SIMD kernel: k-NN over 5 000 vectors takes about
+0.1–0.2 ms here. `attachBlobs(db, { dir })` from `spbt-db/blobs` stores files by content hash with
+reference counts in the database, keeps blobs under 1 KB inline, and garbage-collects after a grace
+period.
 
 **Backends.** Everything above talks to a seven-method `Backend` interface. `lmdb` is the real one;
 `memory` is for tests. `test/backend-conformance.test.js` checks both against the same contract.
+
+The design, the deviations from it and every measurement round are in
+[`docs/engineering-notes.md`](docs/engineering-notes.md).
 
 ## Guarantees
 
 * **Atomic transactions.** A `db.txn()` either commits whole or leaves nothing behind. When it
   returns, the commit is visible to every reader, in this process and in others.
 * **Process crashes do not corrupt the database.** In this repository's crash test a writer was
-  killed with SIGKILL 100 times in each of two recorded runs while committing transactions of up to 200
-  users: every reopen succeeded, no acknowledged commit was missing, no transaction was half
+  killed with SIGKILL 100 times in each of two recorded runs while committing transactions of up
+  to 200 users: every reopen succeeded, no acknowledged commit was missing, no transaction was half
   applied, and every index matched its data. The suite from TANO v27 (`bench/04-crash-safety.mjs`)
   killed writers about 1 500 times during some 67 000 transactions with the same result, and its
   checker was shown to catch injected corruption.
@@ -142,91 +178,52 @@ database, keeps blobs under 1 KB inline, and garbage-collects after a grace peri
 * **Several processes** can open the same files. Readers see a commit within about 1 ms, and a
   writer killed while holding the write lock does not block the next one.
 
-## Limits and honest failures
+## Limits
 
-* **Not measured on the production server yet.** The bot runs on an Oracle Cloud VM.Standard.E2.1.Micro
-  (AMD EPYC 7551, Zen 1, 2 GHz burstable, 952 MB RAM, ext4). Every number here comes from a laptop
-  several times faster per core, with a different file system. The design targets below were set
-  for that server; until the benchmarks run there, the projections are assumptions.
-* **Targets that still fail**, from the last full suite run (`bench/results-2026-10-14-nvme-r2.md`):
+* **Not measured on the production server yet.** The bot runs on an Oracle Cloud
+  VM.Standard.E2.1.Micro (AMD EPYC 7551, Zen 1, 2 GHz burstable, 952 MB RAM, ext4). Every number
+  here comes from a laptop several times faster per core, with a different file system. Until the
+  benchmarks run there, the projections below are assumptions.
+* **Targets that still fail**, from the last full suite run (`bench/results-2026-10-14-nvme-r2.md`)
+  and the 2026-10-18 page-size runs (`bench/results-2026-10-18-cold-pagesize.md`):
 
   | check | target | measured here | projected for the server |
   |---|---|---|---|
   | hot `level.get` / `user.get` p50 | ≤ 2 µs | 1.25 / 1.40 µs | ~3.0 / ~3.4 µs |
   | latest 100 rows of a channel's log, p99 | ≤ 200 µs | 346 µs | ~830 µs |
   | leaderboard range of 100, p99 | ≤ 200 µs | 114 µs | ~275 µs |
-  | event-log write amplification, 80 active channels | ≤ 1.6× | 2.4× at 512 rows/commit, 2.9× at 250 | – |
-  | write amplification, one append stream | ≤ 1.6× | 1.77× | – |
+  | `.mdb` pages resident under a mixed load | ≤ 53 MB | 41 MB at 0.1 of full data size; 63–66 MB at 0.3 | higher at full size; the kernel can drop these pages, but the server's budget counts them |
   | open after kill -9, p99 | ≤ 50 ms | 1.69 s in the suite (200 kills); 23–27 ms in the two JSON-comparison runs (100 kills each), with one 1.6 s outlier | most likely btrfs writeback stalls (see the notes); unmeasured on ext4 |
 
   The projection multiplies by an assumed 2.4× for the slower CPU; `bench/00-calibrate.mjs
   --save-target` replaces the assumption once it runs on the server.
+
+  The event log missed the design's 1.6× write-amplification target and now has its own. A plain
+  append stream still has to stay under 1.6×, and reaches 1.50× on its data alone. The log, with its
+  channel and message indexes and 80 active channels, writes 2.4× at 512 rows per commit and 2.9×
+  at 250, against new limits of 3.0× and 3.5×. Any layout that keeps a per-channel order costs
+  more. At the design peak of 50 messages a second that is 23–28 KB/s written (see the
+  engineering notes).
 
 * **One writer at a time.** Every durable commit waits for the disk, about 3 ms here, so a single
   writer manages about 300 durable commits per second. Batch writes in one `db.txn()` (100 user
   updates per transaction gave 8 000–22 000 per second) or use a coalescer.
 * **Small writes are not small.** A copy-on-write B+tree rewrites whole pages: one durable update
   of one user writes 32–57 KB (data, two indexes, the free list, the meta page). With the default
-  30 s flush, one XP update writes 74 B to 3.6 KB depending on how many members there are, 3–6× what
-  v26's 2-minute file rewrite wrote; at the same 2-minute interval they are about equal.
-* **More RAM on small data.** With 1 000 users the bot-like process used 86 MB against v26's 64
-  MB. Loading the library is most of that: a bare Node process takes 53 MB, and importing
-  SPBT_DB (the lmdb native module and msgpackr) brings it to 71 MB before any data is opened. The
-  gap closes at 100 000 users (122–126 against 129–131 MB). Part of SPBT_DB's figure is mapped
-  database pages, which the kernel can drop under memory pressure; v26's is all heap.
-* **Values over about 2 KB take whole pages.** LMDB moves a value that does not fit half a page into
-  overflow pages, so a 2 KB news post costs 4.1 KB on disk. Keep hot records small, or split them.
-* **20 MB installed**, 15 MB of which is the lmdb native prebuild. It needs a platform with an lmdb
-  prebuild (or a compiler); it will not run in a browser or most edge runtimes.
-* **Linux x64 only, so far.** lmdb-js ships builds for macOS and Windows; nobody has run these tests
-  there.
-* **No query language.** You query keys and the indexes you declared up front. There are no joins,
-  no aggregations and no ad-hoc filters beyond scanning a range.
-* **0.1.0, one user.** It runs one bot. The blob store's put/gc lock works inside one process only,
-  there is no backup tool beyond `compactCopy`, and there is no replication.
-
-## When not to use it
-
-* **You need SQL**: ad-hoc queries, joins, aggregations, reports, or tables you will query in ways
-  you cannot list today. Use SQLite (`node:sqlite`, `better-sqlite3`).
-* **Several machines, or many processes, write a lot at once**, or you need a network server,
-  roles, replication or point-in-time recovery. Use Postgres.
-* **Your data is a few kilobytes and rarely changes.** A JSON file, written to a temp file and
-  renamed into place, is simpler and fast enough. (v26's mistake was not JSON; it was rewriting
-  files in place with no rename, and reading whole files on every event.)
-* **You cannot ship a native module**: serverless bundles, edge runtimes, browsers.
-* **You want a mature database** with years of production behind it and a team maintaining it.
-
-## Architecture
-
-```
- your bot / app
-   │ db.level.get · db.level.bump · db.txn(...) · db.sched.at(...) · elog.appender().append(...)
- ┌─┴────────────────────────────────────────────────────────────────────────────┐
- │ extensions    sched.js   scheduler: job rows keyed by due time, one timer      │
- │               ttl.js     TTL sweeper (bounded scan, or one job per record)     │
- │               coalesce.js  counter / record coalescer / append ring           │
- │               buckets.js monthly collections, merged queries, retention        │
- │               boot.js    __boot record: was the last shutdown clean?           │
- │               vector.js  int8 vectors, WebAssembly SIMD k-NN, RAM LRU          │
- │               blobs.js   content-addressed files, refcounts in the database    │
- ├────────────────────────────────────────────────────────────────────────────────┤
- │ collections   collection.js  put/get/patch/incr/del, indexes (unique, sparse,  │
- │               covered, lagged), query + cursors, TTL, lazy migrations          │
- │ codecs        keys.js   order-preserving binary keys                           │
- │               frame.js  record header + msgpack / varint / raw payload         │
- ├────────────────────────────────────────────────────────────────────────────────┤
- │ Backend       backend.js        the 7-method contract                          │
- │               backend-lmdb.js   lmdb-js, one per environment                   │
- │               backend-memory.js sorted arrays + undo log (tests)               │
- ├────────────────────────────────────────────────────────────────────────────────┤
- │ lmdb-js 3.5.6 → LMDB: memory-mapped copy-on-write B+tree, one writer           │
- └────────────────────────────────────────────────────────────────────────────────┘
-   data/hot.mdb (4 KiB pages)    data/cold.mdb (8 KiB pages)    blobs/ab/cd/<hash>
-```
-
-The design notes, the deviations from the original design and every measurement round are in
-[`docs/engineering-notes.md`](docs/engineering-notes.md).
+  30 s flush, one XP update writes 74 B to 3.6 KB depending on how many members there are, 3–6×
+  what v26's 2-minute file rewrite wrote; at the same 2-minute interval they are about equal.
+* **More RAM on small data.** With 1 000 users the bot-like process used 86 MB against v26's
+  64 MB. Loading the library is most of that: a bare Node process takes 53 MB, and importing
+  SPBT_DB brings it to 71 MB before any data is opened. The gap closes at 100 000 users (122–126
+  against 129–131 MB). Part of SPBT_DB's figure is mapped database pages, which the kernel can
+  drop under memory pressure; v26's is all heap.
+* **Values over about 2 KB take whole pages.** LMDB moves a value that does not fit half a page
+  into overflow pages, so a 2 KB news post costs 4.1 KB on disk. Keep hot records small, or split
+  them.
+* **Linux x64 only, so far.** lmdb-js ships builds for macOS and Windows; nobody has run these
+  tests there.
+* **0.1.0, one user.** It was written for the TANO bot and has not yet run on that bot's
+  production server. The blob store's put/gc lock works inside one process only.
 
 ## Benchmarks
 
@@ -279,14 +276,14 @@ Bytes per record on disk, inserted in random key order, B+tree pages included:
 
 ## Where it comes from
 
-TANO is a general-purpose Discord bot with a web panel, run as one Node.js process on a small
-cloud VM. Up to v26 it kept everything in JSON files: about 8–12 synchronous file reads for every
-message, and a whole-file rewrite, with no rename and no fsync, for every change. A crash in the
-middle of a write could empty a file, and the bot then started with no data for it. For v27 the
-storage was redesigned around the server's real limits (1 GB of RAM, already swapping, a slow
-burstable CPU), and this database was written to that design. It was called TanoDB inside the bot.
-SPBT_DB is the same code, published on its own after a bug review that fixed 11 correctness bugs
-(see [CHANGELOG.md](CHANGELOG.md)).
+TANO is a Discord bot with a web panel, run as one Node.js process on a small cloud VM. Up to v26
+it kept everything in JSON files: about 8–12 synchronous file reads for every message, and a
+whole-file rewrite, with no rename and no fsync, for every change. A crash in the middle of a write
+could empty a file, and the bot then started with no data for it. For v27 the storage was
+redesigned around the server's real limits (1 GB of RAM, already swapping, a slow burstable CPU),
+and this database was written to that design. Inside the bot it was called TanoDB. SPBT_DB is the
+same code, published on its own after a review that fixed 11 correctness bugs (see
+[CHANGELOG.md](CHANGELOG.md)).
 
 ## License
 

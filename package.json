@@ -1,7 +1,7 @@
 {
   "name": "spbt-db",
   "version": "0.1.0",
-  "description": "A small embedded database for Node.js on small VPSes: typed binary keys, secondary indexes, TTL, a durable scheduler, write coalescers, time buckets, int8 vectors and blobs on top of LMDB. Built for the TANO Discord bot.",
+  "description": "Embedded database for a Node.js bot or small service on a small VPS that outgrew its JSON files: typed keys, indexes, TTL, a scheduler that survives restarts and buffered counters, on LMDB. No server, no SQL, no admin UI. Built for the TANO Discord bot.",
   "type": "module",
   "main": "src/index.js",
   "exports": {
@@ -52,7 +52,6 @@
     "secondary-index",
     "ttl",
     "scheduler",
-    "vector-search",
     "discord-bot",
     "small-vps"
   ],
