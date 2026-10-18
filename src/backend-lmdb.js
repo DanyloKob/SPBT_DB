@@ -52,15 +52,21 @@ export const PROFILES = Object.freeze({
   }),
   cold: Object.freeze({
     maxDbs: 64,
-    pageSize: 8192,        // README: 8192 for DBs larger than RAM with range queries
+    // lmdb-js README: 8192 for DBs larger than RAM with range queries. 4096 was A/B-tested on
+    // 2026-10-18 (bench/results-2026-10-18-cold-pagesize.md) and NOT adopted: it failed two of
+    // the six pre-set checks (engineering notes, "Decisions taken", item 1). lmdb-js applies
+    // pageSize only when it creates cold.mdb; an existing file keeps its own.
+    pageSize: 8192,
     mapSize: 8 * 2 ** 30,  // virtual address space, not RSS
     overlappingSync: true,
     safeRestore: false,
     noMemInit: true,
     eventTurnBatching: true,
     // The doc (§4.5) keeps readahead on for cold. Measured (bench 03, panel log views + appends
-    // to 400 channels): cold.mdb resident 93-95 MB with readahead, ~20 MB without. lmdb-js warns
-    // that noReadAhead with pages > 4 KiB costs an extra fault per 8 KiB page on cold reads.
+    // to 400 channels): cold.mdb resident 93-95 MB with readahead, ~20 MB without. lmdb-js says
+    // noReadAhead "should not be used" with pages > 4 KiB: with MADV_RANDOM an 8 KiB page can
+    // take two 4 KiB faults. Measured cost (bench 02, cold byMessageId after eviction): 1.84
+    // major faults and 8.7 KB read per lookup at 8 KiB, against 1.15 and 5.0 KB at 4 KiB.
     noReadAhead: true,
   }),
 });

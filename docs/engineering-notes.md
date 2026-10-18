@@ -309,8 +309,8 @@ That is the same binding Node 24 will load: the package ships only ABI 115/127 b
 10. **The cold env runs with `noReadAhead` (§4.5 keeps readahead on for cold).**
     * Measured with bench 03 (scale 0.1: panel log views plus appends over 2 000 channels): cold.mdb resident fell from 77–95 MB to 20–29 MB, and all `.mdb` resident from 92–111 MB to 32–43 MB, under the ≤ 53 MB of §6.3.
     * The same flag cut the RSS spike of a month `dropCollection` from 8.1 to 1.2 MB at 500k rows. Readahead was pulling ~32 KB around every branch page that `mdb_drop` visits.
-    * The cost: lmdb-js warns against `noReadAhead` with pages over 4 KiB, because a cold read of an 8 KiB page can take two 4 KiB faults instead of one.
-    * See "Decisions for the owner" for the 4 KiB cold page option.
+    * The cost: lmdb-js warns against `noReadAhead` with pages over 4 KiB, because a cold read of an 8 KiB page can take two 4 KiB faults instead of one. Measured 2026-10-18: a cold `byMessageId` took 1.84 major faults and read 8.7 KB at 8 KiB, against 1.15 and 5.0 KB at 4 KiB.
+    * 4 KiB cold pages were A/B-tested on 2026-10-18 and not adopted: see "Decisions taken (2026-10-18)", item 1.
 11. **event_log's primary key is time-ordered (`ts seq`), not `gid chan ts seq` (§4.2, §5.7).** Per-channel reads go through a lagged index instead.
     * With the doc's key, ~80 active channels dirty about one 8 KiB leaf each per flush. That measured **10× write amplification at 512 rows per commit and 20× at 250**, against a threshold of 1.6×.
     * Measured alternatives (bench 01 shape, 80 channels, 512 rows per commit):
@@ -733,6 +733,10 @@ node bench/00-calibrate.mjs --save-target   # once, ON THE TARGET: writes bench/
 Each `NN-*.mjs` runs on its own as well. It prints one JSON document on stdout and exits 1 if a
 threshold fails.
 
+01, 02, 03, 05 and 08 take `--cold-page-size N`, which creates cold.mdb with that page size
+(lmdb-js ignores it for an existing file) and passes it to every child process. Each of them
+records `coldPageSize` and fails if the env's real page size differs from the flag.
+
 **Never point `--dir` at tmpfs.** On tmpfs fsync costs nothing, the page cache cannot be evicted,
 and an mmap counts as shmem rather than file-backed memory. The default is
 `$SPBTDB_BENCH_DIR`, or `$TMPDIR/spbt-db-bench` when that is unset. The datasets never go into the repo.
@@ -905,6 +909,89 @@ The claims split into three groups:
    * Option C: go back to the r1 key and accept 10–20×.
 4. **byMessageId relies on `ts = message.createdTimestamp` for k=0 rows.** A row logged with another `ts` still works, because the `elog_by_msg` filter sends it into the index. It just costs an index entry.
 5. **The ×2.4 projections for get p50, range(100) and open time.** They are assumptions until `00-calibrate.mjs --save-target` and the suite run on the EPYC box with ext4. The open-time tail especially is a btrfs host effect and has to be re-measured there.
+
+### Decisions taken (2026-10-18)
+
+The owner delegated these choices. The numbers match the list above.
+
+1. **Cold page size: move to 4 KiB only if one A/B run confirms it.** It did not, so cold stays at 8 KiB (result at the end of this item).
+   * **Evidence for it.**
+     * Write amplification. 4 KiB measured 2.91× against 3.28× at 512 rows per commit, and 3.18× against 3.77× at 250, which is 11–16 % fewer bytes. That run was made before `elog_by_msg` was filtered.
+     * The lagged index's scatter term is (active channels × page size) / (lag × row bytes), and it halves with the page size. 4 KiB at lag 8 192 should therefore land near 8 KiB at lag 16 384 (2.15×), without that lag's costs (item 2).
+     * The lmdb-js README says `noReadAhead` "should not be used in conjunction with page sizes larger than 4,096". Cold has shipped `noReadAhead` since r2, because it cut cold.mdb resident from 77–95 MB to 20–29 MB. At 4 KiB the two settings agree.
+   * **The original reason for 8 KiB is mostly gone.** lmdb-js suggests 8 KiB "for databases larger than available memory (and moreso if you have range queries)". Since r2, a channel view is an index range plus point gets into a time-ordered primary key, not one contiguous range.
+   * **Overflow pages are not a concern.** LMDB moves a value larger than about half a page into overflow pages. I took the 5 536 real v26 log rows in `TANO/data/archive`, normalised them as §5.7 says, packed them with msgpack and deflated those over 512 B. The resulting frames were p50 181 B, p99 1 014 B, max 2 018 B, and 0.04 % were over 2 000 B. That 0.04 % is the share of rows that would take an overflow page at 4 KiB; at 8 KiB none would.
+   * **The cost.** For the same rows, branch pages take twice the bytes: by the §6.1 formula with the r2 8-byte key, about 4.3 MB per 5 M-row month becomes about 8.6 MB. They are resident only where reads touch them, and bench 03 has to show whether that outweighs the smaller leaves.
+   * **Timing.** The page size is fixed when cold.mdb is created, and no production cold.mdb exists yet. lmdb-js ignores `pageSize` for an existing file, so a cold.mdb made before the switch keeps 8 KiB and keeps working.
+   * **Confirmation.** Compare the medians of alternating 8 KiB / 4 KiB runs on one disk in one session. Every check below must hold:
+     1. event_log WA (bytes written / logical bytes) is at least 8 % lower, both at 512 and at 250 rows per commit.
+     2. bench 03: cold.mdb resident (median over the second half of the mix) is at most 10 % above the 8 KiB figure, and total `.mdb` resident is ≤ 53 MB.
+     3. Cold event_log reads after page-cache eviction, both "latest 100 of a channel" and `byMessageId`: no more disk bytes read per query, and p99 at most 20 % worse.
+     4. bench 08: the projected month drop is ≤ 2 s and the projected RSS spike is ≤ 40 MB.
+     5. bench 05: the catch-up txn's main-thread time is at most 20 % worse.
+     6. Bytes per row with indexes are at most 10 % higher.
+
+     If any check fails, cold stays at 8 KiB and the failed check is written here.
+   * **Result (2026-10-18): not confirmed, so cold stays at 8 KiB.** Full tables:
+     `bench/results-2026-10-18-cold-pagesize.md`. The runs alternated 8, 4, 8, 4 KiB on this box's
+     NVMe in one session (03 and 08 once per variant). Byte counts were identical run to run;
+     times were noisy (load average 2.6–6.5).
+
+     | # | check | 8 KiB → 4 KiB (medians) | result |
+     |---|---|---|---|
+     | 1 | WA ≥ 8 % lower at 512 and 250 | 2.40× → 2.06× (−14 %); 2.88× → 2.32× (−19 %) | PASS |
+     | 2 | cold.mdb resident ≤ +10 %; total `.mdb` resident ≤ 53 MB | cold 42.7 → 25.7 MB (−40 %). Total: 45.8 MB by second-half median, but 56.4 MB by bench 03's own gate (peak hot + peak cold) | **FAIL** read strictly: the check did not say which total, and the bench's gate is over 53 |
+     | 3 | cold reads: no more disk bytes per query, p99 ≤ +20 % | latest 100 of a channel: 40 073 → 40 387 B (+0.8 %, the same in both runs); byMessageId 8 698 → 4 962 B (−43 %). p99 −31 % and −21 % | **FAIL** (+0.8 % bytes on the channel query) |
+     | 4 | projected drop ≤ 2 s, projected RSS spike ≤ 40 MB | 0.64 → 0.85 s; 8.8 → 14.6 MB | PASS |
+     | 5 | catch-up main thread ≤ +20 % | 46.3 → 41.2 ms (−11 %) | PASS |
+     | 6 | bytes per row with indexes ≤ +10 % | 272.8 → 284.1 B (+4.1 %) | PASS |
+
+     * **The rule is not relaxed after the fact.** Both failures are small, and 4 KiB is better on
+       nearly everything else. The checks were fixed before the run so that the result could not
+       move them; loosening one to fit would make every later gate worth less.
+     * **What staying at 8 KiB costs, measured.** The `noReadAhead` + 8 KiB combination that lmdb-js
+       advises against costs 1.84 major faults and 8.7 KB read per cold `byMessageId`, against
+       1.15 and 5.0 KB at 4 KiB. event_log writes 14–19 % more bytes.
+     * **For the owner.** If the 0.8 % and the median reading of check 2 are acceptable to you,
+       switching is one line (`PROFILES.cold.pageSize = 4096`, mirrored into TANO-v27/db), and
+       the 80-channel gates become the 4 KiB medians + 20 %: 2.5× and 2.8×. The choice can only
+       change until the first production cold.mdb is created.
+   * **Found on the way: the 53 MB file-backed budget fails at scale 0.3, at both page sizes.**
+     r2's 41 MB PASS was at scale 0.1 with a 60 s mix. At scale 0.3 with a 120 s mix, 8 KiB reached
+     65.8 MB by the bench's gate (cold.mdb 45.1 MB against its 18 MB share of §6.3) and 4 KiB
+     56.4 MB. The active set does not shrink with the scale and the branch pages grow with it, so
+     full scale will be higher. These pages are clean and file-backed (the kernel can drop them),
+     but §6.3 budgets them. Open: run 03 at `--scale 1`, then on the server.
+2. **Lag: 8 192 stays.**
+   * **What 16 384 buys.** WA goes from 2.40× to 2.15×. That is about 48 B less written per logged row, or about 2.4 KB/s at 50 msg/s.
+   * **What it costs.** It costs what the server is short of:
+     * the catch-up txn stalls the main thread for ~95 ms here instead of 39–59 ms, which is about 230 ms instead of 95–140 ms at the assumed ×2.4;
+     * the read cache doubles to ~2 MB per index for each month that is read;
+     * the tail rebuilt after a restart doubles.
+   * **Disk bytes are what the server has most of** (32 GB free). With 4 KiB pages, most of the 16 384 gain arrives at 8 192 anyway.
+3. **Write-amplification target.**
+   * **The append-stream gate stays.** The design's 1.6× (§13, bench 01) was written for append-key writes, and it stays the gate for exactly that: one append stream, data tree only (1.52×, passes). bench 01's single-stream check needs an index-free collection to measure this. Its current 1.77× includes the two lagged indexes.
+   * **event_log gets its own gate.** As shipped, with its two lagged indexes and 80 active channels, the gate is ≤ 3.0× at 512 rows per commit and ≤ 3.5× at 250. It measured 2.40× and 2.88×.
+     * The gates sit 20–25 % above the measurements, which is outside the ±10 % run-to-run noise.
+     * They sit 3–6× below the pre-r2 layout (10.06× / 20.47×), so a return to per-commit channel scatter fails them.
+     * If cold moves to 4 KiB, the gates become the 4 KiB medians + 20 %.
+   * **Why more than 1.6× is accepted: on this server WA costs disk bytes, and disk is plentiful.**
+     * Measured: 463 B written per logged row at 512 rows per commit and 556 B at 250, against 193 B logical (key + frame).
+     * At the 50 msg/s design peak that is 23–28 KB/s, about 0.1 % of the ~22.5 MB/s that `00-calibrate` assumes for the Balanced volume.
+     * What competes with Lavalink's swap-in on the same disk is the number of flushes, and WA does not change it: 0.257 fsync/s at 50 msg/s.
+   * **Options B and C pay with the scarce resources.** B (no `elog_by_chan`) turns every channel view into a time scan through the month: up to 5 M rows faulted into a 952 MB server. C (the pre-r2 key) writes 10–20×.
+   * **In production,** watch bytes written per logged row (the `wchar` delta per appender commit, divided by its rows). Above 1 KB, look again.
+   * **Applied in bench 01 (2026-10-18), with cold at 8 KiB.** A new index-free collection on the
+     event_log key (`ts:u48 seq:u16`, cold) carries the 1.6× gate: 1.50×. The 80-channel event_log
+     gates are ≤ 3.0× (512 rows per commit) and ≤ 3.5× (250): 2.39× and 2.89×. The single stream
+     with the two lagged indexes (1.77×) is now informational. That run of bench 01 exits 0.
+4. **Message rows (k=0) keyed by `message.createdTimestamp`: confirmed.**
+   * **Why it works.** discord.js derives `createdTimestamp` from the snowflake, so `ts === snowflakeTs(msgId)` exactly. The `elog_by_msg` filter therefore skips the row, and `byMessageId` finds it with a primary-key prefix lookup at its snowflake time.
+   * **What it saves.** In the real v26 rows, 5 011 of 5 536 were messages (90.5 %), 449 deletes (8.1 %) and 76 edits (1.4 %). About 9 in 10 rows need no `elog_by_msg` entry.
+   * **Edits and deletes** keep `ts` = the time the event arrived (Discord sends no timestamp with a delete), and the filter indexes them.
+   * **Late rows,** such as a gateway resume or a message created just before a month boundary, fall below the watermark only when they are older than the last catch-up (~2.7 min at 50 msg/s). They are then indexed at once. That is correct; it just costs a scattered page.
+   * **A rule for the feature layer.** Do not log a k=0 row whose `createdTimestamp` is older than the retention window, for example while backfilling history. `append` would recreate a month that retention already dropped, and it would stay until the next daily drop.
+5. **The ×2.4 projections:** unchanged. They are assumptions until the suite runs on the server.
 
 ### Not measured here, and why
 

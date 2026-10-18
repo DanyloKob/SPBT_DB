@@ -139,6 +139,8 @@ const results = { fs: fsi };
 /* ------------------------------------------------------------ B. event_log */
 const ev = db.collection('event_log_202610', elogSchema(202610));
 const evOld = db.collection('event_log_r1_202610', benchSchemas.event_log_r1);
+// index-free collection with the event_log key (ts:u48 seq:u16, cold): the pure append-key stream of design §13
+const evBare = db.collection('event_log_bare_202610', { key: 'ts:u48 seq:u16', env: 'cold' });
 const cold = db.backend('cold').env;
 const coldTxn = db.coldTxn;
 function evLogical(col, rowsList) {
@@ -160,6 +162,15 @@ function evLogical(col, rowsList) {
     logical1 += evLogical(ev, batch);
   }
   const b1 = agg(one, B1, logical1);
+  // B1b: the same single stream on the index-free collection (data tree only)
+  const oneBare = [];
+  let logicalBare = 0, tsB = T0;
+  for (let i = 0; i < nB1; i += B1) {
+    const batch = Array.from({ length: Math.min(B1, nB1 - i) }, () => eventRow(R, gid, chan, (tsB += 1 + R.int(50)), (seq = (seq + 1) & 0xffff)));
+    oneBare.push(measured(coldTxn, cold, () => { for (const r of batch) evBare.put(r); }));
+    logicalBare += evLogical(evBare, batch);
+  }
+  const b1Bare = agg(oneBare, B1, logicalBare);
 
   // B2: 80 channels across 20 guilds, one wall clock; a third of the traffic in 8 busy channels
   const guilds = Array.from({ length: 20 }, () => R.snow());
@@ -196,6 +207,7 @@ function evLogical(col, rowsList) {
     pageSize: st.pageSize,
     meanFrameBytes: +(logical1 / nB1 - 8).toFixed(1),
     singleStreamAppend512: b1,
+    singleStreamAppend512IndexFree: b1Bare,
     shaped80ch: shaped,
     shaped80chPreR2Key: shapedOld,
     file: {
@@ -209,12 +221,13 @@ function evLogical(col, rowsList) {
   results.coldPageSize = st.pageSize;
   checkColdPageSize(rep, args, st.pageSize);
   rep.check('event_log put/s, batched 512 (80 channels)', shaped.batch512.opsPerSec, '>=', 15000, { unit: 'put/s', projected: projectOps(shaped.batch512, 512) });
-  rep.check('write amplification, append-key single stream (512/commit)', b1.writeAmplification, '<=', 1.6, { unit: 'x' });
-  rep.check('write amplification, event_log 80 channels, 512/commit', shaped.batch512.writeAmplification, '<=', 1.6, { unit: 'x', note: 'as shipped: data + lagged elog_by_chan + elog_by_msg, catch-ups included' });
-  rep.check('write amplification, event_log 80 channels, 250/commit (50 msg/s x 5 s)', shaped.batch250.writeAmplification, '<=', 1.6, { unit: 'x' });
+  rep.check('write amplification, append-key single stream, index-free collection (ts seq, 512/commit)', b1Bare.writeAmplification, '<=', 1.6, { unit: 'x', note: 'design §13 gate: one append stream, data tree only (engineering-notes 2026-10-18 decision 3)' });
+  rep.check('write amplification, single stream WITH the two lagged indexes (512/commit)', b1.writeAmplification, '<=', 1.6, { unit: 'x', informational: true, note: 'event_log as shipped, one channel: includes elog_by_chan + elog_by_msg; measured 1.77x at 8 KiB' });
+  rep.check('write amplification, event_log 80 channels, 512/commit', shaped.batch512.writeAmplification, '<=', 3.0, { unit: 'x', note: 'as shipped: data + lagged elog_by_chan + elog_by_msg, catch-ups included; own gate (engineering-notes 2026-10-18 decision 3), measured 2.40x at 8 KiB' });
+  rep.check('write amplification, event_log 80 channels, 250/commit (50 msg/s x 5 s)', shaped.batch250.writeAmplification, '<=', 3.5, { unit: 'x', note: 'own gate; measured 2.88x at 8 KiB' });
   rep.check('write amplification, 80 channels, 512/commit, pre-r2 key gid chan ts seq', shapedOld.batch512.writeAmplification, '<=', 1.6, { unit: 'x', informational: true });
   rep.check('write amplification, 80 channels, 250/commit, pre-r2 key gid chan ts seq', shapedOld.batch250.writeAmplification, '<=', 1.6, { unit: 'x', informational: true });
-  log(`  event_log single-stream WA ${b1.writeAmplification}, 80ch/512 WA ${shaped.batch512.writeAmplification} (${shaped.batch512.dirtyPagesPerCommit.p50} pages), 80ch/250 WA ${shaped.batch250.writeAmplification}; pre-r2 key 512 ${shapedOld.batch512.writeAmplification} / 250 ${shapedOld.batch250.writeAmplification}`);
+  log(`  event_log index-free single-stream WA ${b1Bare.writeAmplification}; single-stream WA ${b1.writeAmplification}, 80ch/512 WA ${shaped.batch512.writeAmplification} (${shaped.batch512.dirtyPagesPerCommit.p50} pages), 80ch/250 WA ${shaped.batch250.writeAmplification}; pre-r2 key 512 ${shapedOld.batch512.writeAmplification} / 250 ${shapedOld.batch250.writeAmplification}`);
 }
 
 /* ------------------------------------------------- C. 50 msg/s, real time */
